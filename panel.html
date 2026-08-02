@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de leads — AI Manganell</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0f1a">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bricolage+Grotesque:wght@600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0f1a;--bg-soft:#0f1524;--panel:#131b2e;
+  --ink:#eef2f8;--ink-2:#9aa7bd;--ink-3:#657089;
+  --accent:#22d3ee;--accent-2:#0ea5e9;--accent-soft:#12283a;
+  --red:#f5555f;--green:#34d399;--border:#1d2740;--border-2:#26314c;
+  --font-display:'Bricolage Grotesque','Archivo',system-ui,sans-serif;
+  --font-body:'Archivo',system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+body{background:var(--bg-soft);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+h1,h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+a{color:var(--accent)}
+.wrap{max-width:1200px;width:94%;margin:0 auto}
+
+/* LOGIN */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--border-2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:38px}
+.login-card h1{font-size:1.5rem;margin-bottom:6px;text-align:center}
+.login-card p.sub{color:var(--ink-2);font-size:.9rem;text-align:center;margin-bottom:26px}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;font-size:.68rem;color:var(--ink-2);margin-bottom:6px}
+.field input{width:100%;padding:12px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:.98rem}
+.field input:focus{outline:none;border-color:var(--accent)}
+.login-btn{width:100%;background:var(--accent);color:#04222c;font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px}
+.login-btn:hover{opacity:.92}
+.login-error{color:var(--red);font-size:.85rem;text-align:center;margin-top:14px;display:none}
+
+/* PANEL */
+.panel-screen{display:none}
+header.panel-header{background:var(--panel);border-bottom:1px solid var(--border);padding:18px 0}
+.panel-header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.logo{font-family:var(--font-display);font-weight:800;font-size:1.2rem;display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;border-radius:50%;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#04222c;font-family:var(--font-mono);font-weight:700;font-size:.68rem}
+.header-actions{display:flex;align-items:center;gap:10px}
+.logout-btn{background:none;border:1px solid var(--border-2);border-radius:10px;padding:9px 16px;font-family:var(--font-body);font-size:.85rem;color:var(--ink-2);cursor:pointer}
+.logout-btn:hover{color:var(--ink);border-color:var(--ink-2)}
+.notif-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:9px 16px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
+.notif-btn:hover{opacity:.92}
+.notif-btn[disabled]{background:var(--border-2);color:var(--ink-3);cursor:default}
+.notif-status{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-3)}
+
+main{padding:32px 0 60px}
+.panel-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+.panel-title h2{font-size:1.6rem}
+.count-badge{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-2);background:var(--panel);padding:6px 14px;border-radius:999px}
+
+.leads-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+th{text-align:left;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:14px 16px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:.92rem;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover{background:var(--bg-soft)}
+.cell-fecha{color:var(--ink-3);font-family:var(--font-mono);font-size:.78rem;white-space:nowrap}
+.cell-nombre{font-weight:600}
+.cell-notas textarea{width:100%;min-width:160px;min-height:38px;padding:8px 10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:.85rem;resize:vertical}
+.cell-notas textarea:focus{outline:none;border-color:var(--accent)}
+select.estado-select{padding:8px 10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:.85rem;font-weight:600;cursor:pointer}
+.estado-Nuevo{color:var(--accent)}
+.estado-Contactado{color:#eab308}
+.estado-Agendado{color:var(--green)}
+.estado-Cliente{color:var(--green)}
+.estado-Descartado{color:var(--ink-3)}
+.save-hint{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-3);margin-top:4px;opacity:0;transition:opacity .3s}
+.save-hint.show{opacity:1}
+.empty-state{padding:60px 24px;text-align:center;color:var(--ink-2)}
+.loading{padding:60px 24px;text-align:center;color:var(--ink-2);font-family:var(--font-mono);font-size:.85rem}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <h1>Panel de leads</h1>
+    <p class="sub">AI Manganell</p>
+    <form id="login-form">
+      <div class="field">
+        <label for="li-email">Email</label>
+        <input type="email" id="li-email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="li-pass">Contraseña</label>
+        <input type="password" id="li-pass" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="login-btn">Entrar</button>
+      <p class="login-error" id="login-error">Email o contraseña incorrectos.</p>
+    </form>
+  </div>
+</div>
+
+<div class="panel-screen" id="panel-screen">
+  <header class="panel-header">
+    <div class="wrap">
+      <div class="logo"><span class="logo-mark">AM</span>Panel de leads</div>
+      <div class="header-actions">
+        <span class="notif-status" id="notif-status"></span>
+        <button class="notif-btn" id="notif-btn" style="display:none">Activar notificaciones</button>
+        <button class="logout-btn" id="logout-btn">Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="panel-title">
+      <h2>Leads recibidos</h2>
+      <span class="count-badge" id="count-badge">0 leads</span>
+    </div>
+    <div class="leads-table-wrap">
+      <div class="loading" id="loading">Cargando leads…</div>
+      <table id="leads-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Nombre</th>
+            <th>Empresa</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Mensaje</th>
+            <th>Origen</th>
+            <th>Estado</th>
+            <th>Notas</th>
+          </tr>
+        </thead>
+        <tbody id="leads-body"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none">Todavía no ha llegado ningún lead.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+// --- Configura tu proyecto de Supabase (ver setup.md) ---
+var SUPABASE_URL = 'https://dbntpdrvnxdhgvdcexrt.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_yoJZhGK0iJrHDNmj7uEBLA_42dE-kGf';
+
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+var loginScreen = document.getElementById('login-screen');
+var panelScreen = document.getElementById('panel-screen');
+var loginForm = document.getElementById('login-form');
+var loginError = document.getElementById('login-error');
+var logoutBtn = document.getElementById('logout-btn');
+
+function showPanel(){
+  loginScreen.style.display = 'none';
+  panelScreen.style.display = 'block';
+  loadLeads();
+  initPush();
+}
+function showLogin(){
+  panelScreen.style.display = 'none';
+  loginScreen.style.display = 'flex';
+}
+
+supabaseClient.auth.getSession().then(function(res){
+  if(res.data && res.data.session){ showPanel(); } else { showLogin(); }
+});
+
+loginForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  loginError.style.display = 'none';
+  var email = document.getElementById('li-email').value.trim();
+  var pass = document.getElementById('li-pass').value;
+  supabaseClient.auth.signInWithPassword({email:email, password:pass}).then(function(res){
+    if(res.error){ loginError.style.display = 'block'; return; }
+    showPanel();
+  });
+});
+
+logoutBtn.addEventListener('click', function(){
+  supabaseClient.auth.signOut().then(function(){ showLogin(); });
+});
+
+var ESTADOS = ['Nuevo','Contactado','Agendado','Cliente','Descartado'];
+
+function fmtFecha(iso){
+  var d = new Date(iso);
+  return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' +
+    d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+}
+
+function loadLeads(){
+  var loading = document.getElementById('loading');
+  var table = document.getElementById('leads-table');
+  var empty = document.getElementById('empty-state');
+  var body = document.getElementById('leads-body');
+  loading.style.display = 'block';
+  table.style.display = 'none';
+  empty.style.display = 'none';
+
+  supabaseClient.from('leads').select('*').order('created_at',{ascending:false}).then(function(res){
+    loading.style.display = 'none';
+    if(res.error){ empty.textContent = 'Error cargando leads: ' + res.error.message; empty.style.display = 'block'; return; }
+    var leads = res.data || [];
+    document.getElementById('count-badge').textContent = leads.length + (leads.length === 1 ? ' lead' : ' leads');
+    if(leads.length === 0){ empty.style.display = 'block'; return; }
+
+    body.innerHTML = '';
+    leads.forEach(function(lead){
+      var tr = document.createElement('tr');
+
+      var tdFecha = document.createElement('td');
+      tdFecha.className = 'cell-fecha';
+      tdFecha.textContent = fmtFecha(lead.created_at);
+      tr.appendChild(tdFecha);
+
+      var tdNombre = document.createElement('td');
+      tdNombre.className = 'cell-nombre';
+      tdNombre.textContent = lead.nombre || '—';
+      tr.appendChild(tdNombre);
+
+      var tdEmpresa = document.createElement('td');
+      tdEmpresa.textContent = lead.empresa || '—';
+      tr.appendChild(tdEmpresa);
+
+      var tdEmail = document.createElement('td');
+      if(lead.email){
+        var aEmail = document.createElement('a');
+        aEmail.href = 'mailto:' + lead.email;
+        aEmail.textContent = lead.email;
+        tdEmail.appendChild(aEmail);
+      } else { tdEmail.textContent = '—'; }
+      tr.appendChild(tdEmail);
+
+      var tdTelefono = document.createElement('td');
+      if(lead.telefono){
+        var aTel = document.createElement('a');
+        aTel.href = 'tel:' + lead.telefono.replace(/[^0-9+]/g,'');
+        aTel.textContent = lead.telefono;
+        tdTelefono.appendChild(aTel);
+      } else { tdTelefono.textContent = '—'; }
+      tr.appendChild(tdTelefono);
+
+      var tdMensaje = document.createElement('td');
+      tdMensaje.textContent = lead.mensaje || '—';
+      tdMensaje.style.maxWidth = '220px';
+      tr.appendChild(tdMensaje);
+
+      var tdOrigen = document.createElement('td');
+      tdOrigen.textContent = lead.origen || '—';
+      tr.appendChild(tdOrigen);
+
+      var tdEstado = document.createElement('td');
+      var select = document.createElement('select');
+      select.className = 'estado-select estado-' + (lead.estado || 'Nuevo');
+      ESTADOS.forEach(function(estado){
+        var opt = document.createElement('option');
+        opt.value = estado;
+        opt.textContent = estado;
+        if(estado === (lead.estado || 'Nuevo')) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.addEventListener('change', function(){
+        select.className = 'estado-select estado-' + select.value;
+        supabaseClient.from('leads').update({estado:select.value}).eq('id', lead.id).then(function(){});
+      });
+      tdEstado.appendChild(select);
+      tr.appendChild(tdEstado);
+
+      var tdNotas = document.createElement('td');
+      tdNotas.className = 'cell-notas';
+      var textarea = document.createElement('textarea');
+      textarea.value = lead.notas || '';
+      textarea.placeholder = 'Añadir nota…';
+      var hint = document.createElement('div');
+      hint.className = 'save-hint';
+      hint.textContent = 'Guardado ✓';
+      var saveTimer = null;
+      textarea.addEventListener('input', function(){
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(function(){
+          supabaseClient.from('leads').update({notas:textarea.value}).eq('id', lead.id).then(function(){
+            hint.classList.add('show');
+            setTimeout(function(){ hint.classList.remove('show'); }, 1500);
+          });
+        }, 700);
+      });
+      tdNotas.appendChild(textarea);
+      tdNotas.appendChild(hint);
+      tr.appendChild(tdNotas);
+
+      body.appendChild(tr);
+    });
+    table.style.display = 'table';
+  });
+}
+
+// --- Notificaciones push (ver setup.md, Paso 5) ---
+var VAPID_PUBLIC_KEY = 'BLYBjtqIaiH_CTZP2pZg2fJaMe7D8mVuY2eiUIJPMj33n3_KSUpQNQEAKX_2SrDL-tmKpKeiOI1fKEZSE8uTbW4';
+var notifBtn = document.getElementById('notif-btn');
+var notifStatus = document.getElementById('notif-status');
+
+function urlBase64ToUint8Array(base64String){
+  var padding = '='.repeat((4 - base64String.length % 4) % 4);
+  var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  var rawData = window.atob(base64);
+  var outputArray = new Uint8Array(rawData.length);
+  for (var i = 0; i < rawData.length; i++){ outputArray[i] = rawData.charCodeAt(i); }
+  return outputArray;
+}
+
+function initPush(){
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)){
+    notifStatus.textContent = 'Notificaciones no disponibles en este navegador';
+    return;
+  }
+  navigator.serviceWorker.register('sw.js').then(function(reg){
+    reg.pushManager.getSubscription().then(function(sub){
+      if (sub){
+        notifBtn.style.display = 'none';
+        notifStatus.textContent = 'Notificaciones activadas ✓';
+      } else if (Notification.permission === 'denied'){
+        notifBtn.style.display = 'none';
+        notifStatus.textContent = 'Notificaciones bloqueadas en el navegador';
+      } else {
+        notifBtn.style.display = 'inline-block';
+        notifStatus.textContent = '';
+      }
+    });
+  }).catch(function(){
+    notifStatus.textContent = 'No se pudo registrar el service worker';
+  });
+}
+
+notifBtn.addEventListener('click', function(){
+  notifBtn.disabled = true;
+  navigator.serviceWorker.ready.then(function(reg){
+    return reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+  }).then(function(sub){
+    var json = sub.toJSON();
+    return supabaseClient.from('push_subscriptions').upsert({
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth
+    }, { onConflict: 'endpoint' });
+  }).then(function(res){
+    if (res && res.error){ throw res.error; }
+    notifBtn.style.display = 'none';
+    notifStatus.textContent = 'Notificaciones activadas ✓';
+  }).catch(function(err){
+    notifBtn.disabled = false;
+    notifStatus.textContent = 'No se pudo activar: ' + (err && err.message ? err.message : 'permiso denegado');
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "Leads — AI Manganell",
+  "short_name": "Leads AM",
+  "description": "Panel privado de leads de AI Manganell, con notificaciones al instante.",
+  "start_url": "panel.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "assets/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
