@@ -38,6 +38,9 @@ a{color:var(--accent)}
 .field label{display:block;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;font-size:.68rem;color:var(--ink-2);margin-bottom:6px}
 .field input{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
 .field input:focus{outline:none;border-color:var(--accent)}
+.field-remember{margin-bottom:18px}
+.field-remember label{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--ink-2);cursor:pointer}
+.field-remember input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
 .login-btn{width:100%;background:var(--accent);color:#04222c;font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px;min-height:48px}
 .login-btn:hover{opacity:.92}
 .login-error{color:var(--red);font-size:.85rem;text-align:center;margin-top:14px;display:none}
@@ -83,7 +86,7 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
 .empty-state{padding:60px 24px;text-align:center;color:var(--ink-2)}
 .loading{padding:60px 24px;text-align:center;color:var(--ink-2);font-family:var(--font-mono);font-size:.85rem}
 
-@media (min-width: 721px){
+@media (min-width: 961px){
   .cell-mensaje{max-width:220px}
 }
 
@@ -112,8 +115,8 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
 .lead-detail-row select.estado-select{width:100%}
 .lead-detail-row textarea{width:100%}
 
-/* Móvil: se oculta la tabla, se muestran las tarjetas */
-@media (max-width: 720px){
+/* Pantallas estrechas o medianas: se oculta la tabla (evita el scroll horizontal), se muestran las tarjetas */
+@media (max-width: 960px){
   .wrap{width:92%}
   main{padding:18px 0 48px}
   .leads-table-wrap{display:none}
@@ -135,6 +138,9 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
       <div class="field">
         <label for="li-pass">Contraseña</label>
         <input type="password" id="li-pass" required autocomplete="current-password">
+      </div>
+      <div class="field-remember">
+        <label><input type="checkbox" id="li-remember" checked> Recordarme en este dispositivo</label>
       </div>
       <button type="submit" class="login-btn">Entrar</button>
       <p class="login-error" id="login-error">Email o contraseña incorrectos.</p>
@@ -187,7 +193,10 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
 var SUPABASE_URL = 'https://dbntpdrvnxdhgvdcexrt.supabase.co';
 var SUPABASE_ANON_KEY = 'sb_publishable_yoJZhGK0iJrHDNmj7uEBLA_42dE-kGf';
 
-var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var SUPABASE_AUTH_STORAGE_KEY = 'sb-dbntpdrvnxdhgvdcexrt-auth-token';
+var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage, storageKey: SUPABASE_AUTH_STORAGE_KEY }
+});
 
 var loginScreen = document.getElementById('login-screen');
 var panelScreen = document.getElementById('panel-screen');
@@ -262,10 +271,16 @@ loginForm.addEventListener('submit', function(e){
   var email = document.getElementById('li-email').value.trim();
   var pass = document.getElementById('li-pass').value;
   loginSubmitBtn.disabled = true;
+  var remember = document.getElementById('li-remember').checked;
   supabaseClient.auth.signInWithPassword({email:email, password:pass}).then(function(res){
     loginSubmitBtn.disabled = false;
     if(res.error){ registerFailedAttempt(); loginError.style.display = 'block'; return; }
     clearLoginLock();
+    if (!remember){
+      // La sesión sigue activa en memoria para esta visita, pero no se guarda
+      // para la próxima vez que se abra la app.
+      localStorage.removeItem(SUPABASE_AUTH_STORAGE_KEY);
+    }
     showPanel();
   });
 });
