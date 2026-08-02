@@ -21,7 +21,8 @@ self.addEventListener('push', function(event){
     data: { url: data.url || 'panel.html' },
     tag: data.tag || 'nuevo-lead',
     renotify: true,
-    requireInteraction: true
+    requireInteraction: true,
+    vibrate: [200, 100, 200]
   };
 
   event.waitUntil(self.registration.showNotification(title, options));

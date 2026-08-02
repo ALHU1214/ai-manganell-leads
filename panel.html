@@ -64,6 +64,16 @@ main{padding:24px 0 60px}
 .panel-title h2{font-size:1.4rem}
 .count-badge{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-2);background:var(--panel);padding:6px 14px;border-radius:999px;white-space:nowrap}
 
+.leads-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.search-input{flex:1 1 220px;padding:12px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
+.search-input:focus{outline:none;border-color:var(--accent)}
+.search-input::placeholder{color:var(--ink-3)}
+.estado-filter{flex:0 0 auto;padding:12px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px;cursor:pointer}
+
+.phone-links{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.wa-btn{background:rgba(37,211,102,.15);color:#25d366;border-radius:6px;padding:3px 9px;font-family:var(--font-body);font-size:.72rem;font-weight:700;text-decoration:none;white-space:nowrap}
+.wa-btn:hover{background:rgba(37,211,102,.25)}
+
 .leads-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:900px}
 th{text-align:left;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:14px 16px;border-bottom:1px solid var(--border);white-space:nowrap}
@@ -172,6 +182,17 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
     <div class="panel-title">
       <h2>Leads recibidos</h2>
       <span class="count-badge" id="count-badge">0 leads</span>
+    </div>
+    <div class="leads-toolbar">
+      <input type="search" id="search-input" class="search-input" placeholder="Buscar por nombre, empresa o email…">
+      <select id="estado-filter" class="estado-filter">
+        <option value="Todos">Todos los estados</option>
+        <option value="Nuevo">Nuevo</option>
+        <option value="Contactado">Contactado</option>
+        <option value="Agendado">Agendado</option>
+        <option value="Cliente">Cliente</option>
+        <option value="Descartado">Descartado</option>
+      </select>
     </div>
     <div class="leads-table-wrap">
       <div class="loading" id="loading">Cargando leads…</div>
@@ -321,7 +342,9 @@ function makeEstadoSelect(lead, onChangeExtra){
   });
   select.addEventListener('change', function(){
     select.className = 'estado-select estado-' + select.value;
+    lead.estado = select.value;
     supabaseClient.from('leads').update({estado:select.value}).eq('id', lead.id).then(function(){});
+    updateCountBadge();
     if (onChangeExtra) onChangeExtra(select.value);
   });
   return select;
@@ -385,6 +408,25 @@ function showUndoToast(message, onUndo, onExpire){
   });
 }
 
+function makePhoneNode(telefono){
+  var wrap = document.createElement('div');
+  if (!telefono){ wrap.textContent = '—'; return wrap; }
+  wrap.className = 'phone-links';
+  var digits = telefono.replace(/[^0-9+]/g,'');
+  var aTel = document.createElement('a');
+  aTel.href = 'tel:' + digits;
+  aTel.textContent = telefono;
+  wrap.appendChild(aTel);
+  var aWa = document.createElement('a');
+  aWa.href = 'https://wa.me/' + digits.replace(/^\+/,'');
+  aWa.target = '_blank';
+  aWa.rel = 'noopener';
+  aWa.className = 'wa-btn';
+  aWa.textContent = 'WhatsApp';
+  wrap.appendChild(aWa);
+  return wrap;
+}
+
 function makeDeleteButton(lead, node){
   var btn = document.createElement('button');
   btn.type = 'button';
@@ -399,6 +441,9 @@ function makeDeleteButton(lead, node){
       supabaseClient.from('leads').delete().eq('id', lead.id).then(function(res){
         if (res.error){ node.style.display = ''; window.alert('No se pudo eliminar: ' + res.error.message); return; }
         node.remove();
+        var idx = allLeads.findIndex(function(l){ return l.id === lead.id; });
+        if (idx !== -1) allLeads.splice(idx, 1);
+        updateCountBadge();
       });
     });
   });
@@ -477,15 +522,7 @@ function buildLeadCard(lead){
   } else { emailNode.textContent = '—'; }
   body.appendChild(detailRow('Email', emailNode));
 
-  var telNode = document.createElement('div');
-  telNode.className = 'dl-value';
-  if (lead.telefono){
-    var aTel = document.createElement('a');
-    aTel.href = 'tel:' + lead.telefono.replace(/[^0-9+]/g,'');
-    aTel.textContent = lead.telefono;
-    telNode.appendChild(aTel);
-  } else { telNode.textContent = '—'; }
-  body.appendChild(detailRow('Teléfono', telNode));
+  body.appendChild(detailRow('Teléfono', makePhoneNode(lead.telefono)));
 
   body.appendChild(detailRow('Mensaje', lead.mensaje || '—'));
   body.appendChild(detailRow('Origen', lead.origen || '—'));
@@ -505,26 +542,53 @@ function buildLeadCard(lead){
   return details;
 }
 
-function loadLeads(){
-  var loading = document.getElementById('loading');
+var allLeads = [];
+var searchInput = document.getElementById('search-input');
+var estadoFilter = document.getElementById('estado-filter');
+
+function updateCountBadge(){
+  var total = allLeads.length;
+  var nuevos = allLeads.filter(function(l){ return (l.estado || 'Nuevo') === 'Nuevo'; }).length;
+  var badge = document.getElementById('count-badge');
+  var totalTxt = total + (total === 1 ? ' lead' : ' leads');
+  badge.textContent = nuevos > 0 ? (nuevos + ' nuevo' + (nuevos === 1 ? '' : 's') + ' · ' + totalTxt) : totalTxt;
+}
+
+function applyFilters(){
+  var query = searchInput.value.trim().toLowerCase();
+  var estado = estadoFilter.value;
+  var filtered = allLeads.filter(function(lead){
+    if (estado !== 'Todos' && (lead.estado || 'Nuevo') !== estado) return false;
+    if (query){
+      var haystack = [lead.nombre, lead.empresa, lead.email].filter(Boolean).join(' ').toLowerCase();
+      if (haystack.indexOf(query) === -1) return false;
+    }
+    return true;
+  });
+  renderLeads(filtered, query.length > 0 || estado !== 'Todos');
+}
+
+searchInput.addEventListener('input', applyFilters);
+estadoFilter.addEventListener('change', applyFilters);
+
+function renderLeads(leads, isFiltered){
   var table = document.getElementById('leads-table');
   var empty = document.getElementById('empty-state');
   var body = document.getElementById('leads-body');
   var cards = document.getElementById('leads-cards');
-  loading.style.display = 'block';
-  table.style.display = 'none';
+
+  if (leads.length === 0){
+    table.style.display = 'none';
+    empty.textContent = isFiltered ? 'Ningún lead coincide con la búsqueda/filtro.' : 'Todavía no ha llegado ningún lead.';
+    empty.style.display = 'block';
+    cards.innerHTML = '';
+    return;
+  }
   empty.style.display = 'none';
 
-  supabaseClient.from('leads').select('*').order('created_at',{ascending:false}).then(function(res){
-    loading.style.display = 'none';
-    if(res.error){ empty.textContent = 'Error cargando leads: ' + res.error.message; empty.style.display = 'block'; return; }
-    var leads = res.data || [];
-    document.getElementById('count-badge').textContent = leads.length + (leads.length === 1 ? ' lead' : ' leads');
-    if(leads.length === 0){ empty.style.display = 'block'; cards.innerHTML = ''; return; }
-
-    body.innerHTML = '';
-    cards.innerHTML = '';
-    leads.forEach(function(lead){
+  body.innerHTML = '';
+  cards.innerHTML = '';
+  leads.forEach(function(lead){
       cards.appendChild(buildLeadCard(lead));
 
       var tr = document.createElement('tr');
@@ -562,12 +626,7 @@ function loadLeads(){
 
       var tdTelefono = document.createElement('td');
       tdTelefono.setAttribute('data-label', 'Teléfono');
-      if(lead.telefono){
-        var aTel = document.createElement('a');
-        aTel.href = 'tel:' + lead.telefono.replace(/[^0-9+]/g,'');
-        aTel.textContent = lead.telefono;
-        tdTelefono.appendChild(aTel);
-      } else { tdTelefono.textContent = '—'; }
+      tdTelefono.appendChild(makePhoneNode(lead.telefono));
       tr.appendChild(tdTelefono);
 
       var tdMensaje = document.createElement('td');
@@ -602,6 +661,20 @@ function loadLeads(){
       body.appendChild(tr);
     });
     table.style.display = 'table';
+}
+
+function loadLeads(){
+  var loading = document.getElementById('loading');
+  var empty = document.getElementById('empty-state');
+  loading.style.display = 'block';
+  empty.style.display = 'none';
+
+  supabaseClient.from('leads').select('*').order('created_at',{ascending:false}).then(function(res){
+    loading.style.display = 'none';
+    if(res.error){ empty.textContent = 'Error cargando leads: ' + res.error.message; empty.style.display = 'block'; return; }
+    allLeads = res.data || [];
+    updateCountBadge();
+    applyFilters();
   });
 }
 
