@@ -171,13 +171,62 @@ supabaseClient.auth.getSession().then(function(res){
   if(res.data && res.data.session){ showPanel(); } else { showLogin(); }
 });
 
+// --- Freno a intentos de login por fuerza bruta ---
+var LOGIN_LOCK_KEY = 'am_login_lock';
+var MAX_ATTEMPTS = 5;
+var loginSubmitBtn = loginForm.querySelector('.login-btn');
+var lockTimer = null;
+
+function readLoginLock(){
+  try { return JSON.parse(localStorage.getItem(LOGIN_LOCK_KEY)) || {attempts:0, lockUntil:0}; }
+  catch(e){ return {attempts:0, lockUntil:0}; }
+}
+function writeLoginLock(state){
+  localStorage.setItem(LOGIN_LOCK_KEY, JSON.stringify(state));
+}
+function registerFailedAttempt(){
+  var state = readLoginLock();
+  state.attempts += 1;
+  if (state.attempts >= MAX_ATTEMPTS){
+    var extra = state.attempts - MAX_ATTEMPTS;
+    var waitSeconds = Math.min(30 * Math.pow(2, extra), 900); // sube 30s, 60s, 120s... tope 15 min
+    state.lockUntil = Date.now() + waitSeconds * 1000;
+  }
+  writeLoginLock(state);
+  applyLoginLockUI();
+}
+function clearLoginLock(){
+  localStorage.removeItem(LOGIN_LOCK_KEY);
+}
+function applyLoginLockUI(){
+  var state = readLoginLock();
+  var remainingMs = state.lockUntil - Date.now();
+  clearTimeout(lockTimer);
+  if (remainingMs > 0){
+    loginSubmitBtn.disabled = true;
+    var remainingSec = Math.ceil(remainingMs / 1000);
+    loginError.style.display = 'block';
+    loginError.textContent = 'Demasiados intentos. Prueba de nuevo en ' + remainingSec + 's.';
+    lockTimer = setTimeout(applyLoginLockUI, 1000);
+  } else {
+    loginSubmitBtn.disabled = false;
+  }
+}
+applyLoginLockUI();
+
 loginForm.addEventListener('submit', function(e){
   e.preventDefault();
+  var state = readLoginLock();
+  if (state.lockUntil > Date.now()){ applyLoginLockUI(); return; }
   loginError.style.display = 'none';
+  loginError.textContent = 'Email o contraseña incorrectos.';
   var email = document.getElementById('li-email').value.trim();
   var pass = document.getElementById('li-pass').value;
+  loginSubmitBtn.disabled = true;
   supabaseClient.auth.signInWithPassword({email:email, password:pass}).then(function(res){
-    if(res.error){ loginError.style.display = 'block'; return; }
+    loginSubmitBtn.disabled = false;
+    if(res.error){ registerFailedAttempt(); loginError.style.display = 'block'; return; }
+    clearLoginLock();
     showPanel();
   });
 });
