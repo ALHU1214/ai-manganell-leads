@@ -44,6 +44,9 @@ a{color:var(--accent)}
 .login-btn{width:100%;background:var(--accent);color:#04222c;font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px;min-height:48px}
 .login-btn:hover{opacity:.92}
 .login-error{color:var(--red);font-size:.85rem;text-align:center;margin-top:14px;display:none}
+.passkey-btn{background:none;border:1px solid var(--border-2);color:var(--ink);font-weight:600;font-size:.9rem;padding:13px;border-radius:10px;cursor:pointer;min-height:48px}
+.passkey-btn:hover{border-color:var(--accent)}
+#passkey-login-btn{width:100%;margin-top:14px}
 
 /* PANEL */
 .panel-screen{display:none}
@@ -176,6 +179,7 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
       <button type="submit" class="login-btn">Entrar</button>
       <p class="login-error" id="login-error">Email o contraseña incorrectos.</p>
     </form>
+    <button type="button" class="passkey-btn" id="passkey-login-btn">Entrar con Face ID / huella</button>
   </div>
 </div>
 
@@ -186,6 +190,7 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
       <div class="header-actions">
         <span class="notif-status" id="notif-status"></span>
         <button class="notif-btn" id="notif-btn" style="display:none">Activar notificaciones</button>
+        <button class="passkey-btn" id="passkey-register-btn" style="display:none">Registrar Face ID</button>
         <button class="logout-btn" id="logout-btn">Cerrar sesión</button>
       </div>
     </div>
@@ -240,7 +245,7 @@ var SUPABASE_ANON_KEY = 'sb_publishable_yoJZhGK0iJrHDNmj7uEBLA_42dE-kGf';
 
 var SUPABASE_AUTH_STORAGE_KEY = 'sb-dbntpdrvnxdhgvdcexrt-auth-token';
 var supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage, storageKey: SUPABASE_AUTH_STORAGE_KEY }
+  auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage, storageKey: SUPABASE_AUTH_STORAGE_KEY, experimental: { passkey: true } }
 });
 
 var loginScreen = document.getElementById('login-screen');
@@ -254,6 +259,7 @@ function showPanel(){
   panelScreen.style.display = 'block';
   loadLeads();
   initPush();
+  initPasskeyRegister();
 }
 function showLogin(){
   panelScreen.style.display = 'none';
@@ -262,6 +268,42 @@ function showLogin(){
 
 supabaseClient.auth.getSession().then(function(res){
   if(res.data && res.data.session){ showPanel(); } else { showLogin(); }
+});
+
+// --- Face ID / huella (passkeys) ---
+var passkeySupported = !!(window.PublicKeyCredential);
+var passkeyLoginBtn = document.getElementById('passkey-login-btn');
+var passkeyRegisterBtn = document.getElementById('passkey-register-btn');
+
+if (!passkeySupported){
+  passkeyLoginBtn.style.display = 'none';
+} else {
+  passkeyLoginBtn.addEventListener('click', function(){
+    passkeyLoginBtn.disabled = true;
+    supabaseClient.auth.signInWithPasskey().then(function(res){
+      passkeyLoginBtn.disabled = false;
+      if (res.error){ loginError.textContent = 'No se pudo entrar con Face ID: ' + res.error.message; loginError.style.display = 'block'; return; }
+      showPanel();
+    });
+  });
+}
+
+function initPasskeyRegister(){
+  if (!passkeySupported){ passkeyRegisterBtn.style.display = 'none'; return; }
+  supabaseClient.auth.passkey.list().then(function(res){
+    var yaTiene = res.data && res.data.length > 0;
+    passkeyRegisterBtn.style.display = yaTiene ? 'none' : 'inline-block';
+  });
+}
+
+passkeyRegisterBtn.addEventListener('click', function(){
+  passkeyRegisterBtn.disabled = true;
+  supabaseClient.auth.registerPasskey().then(function(res){
+    passkeyRegisterBtn.disabled = false;
+    if (res.error){ window.alert('No se pudo registrar: ' + res.error.message); return; }
+    passkeyRegisterBtn.style.display = 'none';
+    window.alert('Face ID registrado. La próxima vez podrás entrar sin contraseña.');
+  });
 });
 
 // --- Freno a intentos de login por fuerza bruta ---
