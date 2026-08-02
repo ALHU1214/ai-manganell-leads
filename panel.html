@@ -83,6 +83,10 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
 .estado-Descartado{color:var(--ink-3)}
 .save-hint{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-3);margin-top:4px;opacity:0;transition:opacity .3s}
 .save-hint.show{opacity:1}
+.delete-btn{background:none;border:1px solid rgba(245,85,95,.35);color:var(--red);border-radius:8px;padding:8px 14px;font-family:var(--font-body);font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.delete-btn:hover{background:rgba(245,85,95,.1)}
+.delete-btn[disabled]{opacity:.5;cursor:default}
+.lead-detail-row .delete-btn{width:100%;min-height:44px}
 .empty-state{padding:60px 24px;text-align:center;color:var(--ink-2)}
 .loading{padding:60px 24px;text-align:center;color:var(--ink-2);font-family:var(--font-mono);font-size:.85rem}
 
@@ -178,6 +182,7 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
             <th>Origen</th>
             <th>Estado</th>
             <th>Notas</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="leads-body"></tbody>
@@ -338,6 +343,23 @@ function makeNotasField(lead){
   return wrap;
 }
 
+function makeDeleteButton(lead, onDeleted){
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'delete-btn';
+  btn.textContent = 'Eliminar';
+  btn.addEventListener('click', function(){
+    var quien = lead.nombre || lead.empresa || 'este lead';
+    if (!window.confirm('¿Eliminar ' + quien + '? No se puede deshacer.')) return;
+    btn.disabled = true;
+    supabaseClient.from('leads').delete().eq('id', lead.id).then(function(res){
+      if (res.error){ btn.disabled = false; window.alert('No se pudo eliminar: ' + res.error.message); return; }
+      onDeleted();
+    });
+  });
+  return btn;
+}
+
 function detailRow(label, valueNode){
   var row = document.createElement('div');
   row.className = 'lead-detail-row';
@@ -428,6 +450,11 @@ function buildLeadCard(lead){
     dot.style.display = value === 'Nuevo' ? 'inline-block' : 'none';
   })));
   body.appendChild(detailRow('Notas', makeNotasField(lead)));
+
+  var deleteWrap = document.createElement('div');
+  deleteWrap.className = 'lead-detail-row';
+  deleteWrap.appendChild(makeDeleteButton(lead, function(){ details.remove(); }));
+  body.appendChild(deleteWrap);
 
   details.appendChild(body);
   return details;
@@ -521,6 +548,11 @@ function loadLeads(){
       tdNotas.setAttribute('data-label', 'Notas');
       tdNotas.appendChild(makeNotasField(lead));
       tr.appendChild(tdNotas);
+
+      var tdAcciones = document.createElement('td');
+      tdAcciones.setAttribute('data-label', '');
+      tdAcciones.appendChild(makeDeleteButton(lead, function(){ tr.remove(); }));
+      tr.appendChild(tdAcciones);
 
       body.appendChild(tr);
     });
