@@ -36,30 +36,30 @@ a{color:var(--accent)}
 .login-card p.sub{color:var(--ink-2);font-size:.9rem;text-align:center;margin-bottom:26px}
 .field{margin-bottom:16px}
 .field label{display:block;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;font-size:.68rem;color:var(--ink-2);margin-bottom:6px}
-.field input{width:100%;padding:12px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:.98rem}
+.field input{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
 .field input:focus{outline:none;border-color:var(--accent)}
-.login-btn{width:100%;background:var(--accent);color:#04222c;font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px}
+.login-btn{width:100%;background:var(--accent);color:#04222c;font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px;min-height:48px}
 .login-btn:hover{opacity:.92}
 .login-error{color:var(--red);font-size:.85rem;text-align:center;margin-top:14px;display:none}
 
 /* PANEL */
 .panel-screen{display:none}
-header.panel-header{background:var(--panel);border-bottom:1px solid var(--border);padding:18px 0}
-.panel-header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.logo{font-family:var(--font-display);font-weight:800;font-size:1.2rem;display:flex;align-items:center;gap:10px}
-.logo-mark{width:32px;height:32px;border-radius:50%;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#04222c;font-family:var(--font-mono);font-weight:700;font-size:.68rem}
-.header-actions{display:flex;align-items:center;gap:10px}
-.logout-btn{background:none;border:1px solid var(--border-2);border-radius:10px;padding:9px 16px;font-family:var(--font-body);font-size:.85rem;color:var(--ink-2);cursor:pointer}
+header.panel-header{background:var(--panel);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:10}
+.panel-header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px}
+.logo{font-family:var(--font-display);font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;flex-shrink:0;border-radius:50%;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#04222c;font-family:var(--font-mono);font-weight:700;font-size:.68rem}
+.header-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px}
+.logout-btn{background:none;border:1px solid var(--border-2);border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;color:var(--ink-2);cursor:pointer}
 .logout-btn:hover{color:var(--ink);border-color:var(--ink-2)}
-.notif-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:9px 16px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
+.notif-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
 .notif-btn:hover{opacity:.92}
 .notif-btn[disabled]{background:var(--border-2);color:var(--ink-3);cursor:default}
-.notif-status{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-3)}
+.notif-status{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-3);width:100%}
 
-main{padding:32px 0 60px}
-.panel-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px}
-.panel-title h2{font-size:1.6rem}
-.count-badge{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-2);background:var(--panel);padding:6px 14px;border-radius:999px}
+main{padding:24px 0 60px}
+.panel-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.panel-title h2{font-size:1.4rem}
+.count-badge{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-2);background:var(--panel);padding:6px 14px;border-radius:999px;white-space:nowrap}
 
 .leads-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow-x:auto}
 table{width:100%;border-collapse:collapse;min-width:900px}
@@ -69,9 +69,9 @@ tr:last-child td{border-bottom:none}
 tr:hover{background:var(--bg-soft)}
 .cell-fecha{color:var(--ink-3);font-family:var(--font-mono);font-size:.78rem;white-space:nowrap}
 .cell-nombre{font-weight:600}
-.cell-notas textarea{width:100%;min-width:160px;min-height:38px;padding:8px 10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:.85rem;resize:vertical}
+.cell-notas textarea{width:100%;min-width:160px;min-height:44px;padding:10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;resize:vertical}
 .cell-notas textarea:focus{outline:none;border-color:var(--accent)}
-select.estado-select{padding:8px 10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:.85rem;font-weight:600;cursor:pointer}
+select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;font-weight:600;cursor:pointer;min-height:44px}
 .estado-Nuevo{color:var(--accent)}
 .estado-Contactado{color:#eab308}
 .estado-Agendado{color:var(--green)}
@@ -81,6 +81,29 @@ select.estado-select{padding:8px 10px;border-radius:8px;border:1px solid var(--b
 .save-hint.show{opacity:1}
 .empty-state{padding:60px 24px;text-align:center;color:var(--ink-2)}
 .loading{padding:60px 24px;text-align:center;color:var(--ink-2);font-family:var(--font-mono);font-size:.85rem}
+
+@media (min-width: 721px){
+  .cell-mensaje{max-width:220px}
+}
+
+/* Móvil: la tabla se convierte en tarjetas apiladas, sin scroll horizontal */
+@media (max-width: 720px){
+  .wrap{width:92%}
+  main{padding:18px 0 48px}
+  .leads-table-wrap{background:none;border:none;border-radius:0;overflow-x:visible}
+  table{min-width:0}
+  thead{display:none}
+  table, tbody, tr, td{display:block;width:100%}
+  tr{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden}
+  td{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:12px 14px;border-bottom:1px solid var(--border);text-align:right}
+  tr:last-child td, tr td:last-child{border-bottom:none}
+  td::before{content:attr(data-label);flex-shrink:0;text-align:left;font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);padding-top:2px}
+  .cell-nombre{font-size:1rem}
+  .cell-notas{display:block;text-align:left}
+  .cell-notas::before{display:block;margin-bottom:6px}
+  .cell-notas textarea{margin-top:0}
+  select.estado-select{max-width:60%}
+}
 </style>
 </head>
 <body>
@@ -265,19 +288,23 @@ function loadLeads(){
 
       var tdFecha = document.createElement('td');
       tdFecha.className = 'cell-fecha';
+      tdFecha.setAttribute('data-label', 'Fecha');
       tdFecha.textContent = fmtFecha(lead.created_at);
       tr.appendChild(tdFecha);
 
       var tdNombre = document.createElement('td');
       tdNombre.className = 'cell-nombre';
+      tdNombre.setAttribute('data-label', 'Nombre');
       tdNombre.textContent = lead.nombre || '—';
       tr.appendChild(tdNombre);
 
       var tdEmpresa = document.createElement('td');
+      tdEmpresa.setAttribute('data-label', 'Empresa');
       tdEmpresa.textContent = lead.empresa || '—';
       tr.appendChild(tdEmpresa);
 
       var tdEmail = document.createElement('td');
+      tdEmail.setAttribute('data-label', 'Email');
       if(lead.email){
         var aEmail = document.createElement('a');
         aEmail.href = 'mailto:' + lead.email;
@@ -287,6 +314,7 @@ function loadLeads(){
       tr.appendChild(tdEmail);
 
       var tdTelefono = document.createElement('td');
+      tdTelefono.setAttribute('data-label', 'Teléfono');
       if(lead.telefono){
         var aTel = document.createElement('a');
         aTel.href = 'tel:' + lead.telefono.replace(/[^0-9+]/g,'');
@@ -296,15 +324,18 @@ function loadLeads(){
       tr.appendChild(tdTelefono);
 
       var tdMensaje = document.createElement('td');
+      tdMensaje.className = 'cell-mensaje';
+      tdMensaje.setAttribute('data-label', 'Mensaje');
       tdMensaje.textContent = lead.mensaje || '—';
-      tdMensaje.style.maxWidth = '220px';
       tr.appendChild(tdMensaje);
 
       var tdOrigen = document.createElement('td');
+      tdOrigen.setAttribute('data-label', 'Origen');
       tdOrigen.textContent = lead.origen || '—';
       tr.appendChild(tdOrigen);
 
       var tdEstado = document.createElement('td');
+      tdEstado.setAttribute('data-label', 'Estado');
       var select = document.createElement('select');
       select.className = 'estado-select estado-' + (lead.estado || 'Nuevo');
       ESTADOS.forEach(function(estado){
@@ -323,6 +354,7 @@ function loadLeads(){
 
       var tdNotas = document.createElement('td');
       tdNotas.className = 'cell-notas';
+      tdNotas.setAttribute('data-label', 'Notas');
       var textarea = document.createElement('textarea');
       textarea.value = lead.notas || '';
       textarea.placeholder = 'Añadir nota…';
