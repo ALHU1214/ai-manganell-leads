@@ -87,6 +87,11 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
 .delete-btn:hover{background:rgba(245,85,95,.1)}
 .delete-btn[disabled]{opacity:.5;cursor:default}
 .lead-detail-row .delete-btn{width:100%;min-height:44px}
+
+.toast-container{position:fixed;left:0;right:0;bottom:20px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:100;padding:0 16px;pointer-events:none}
+.toast{pointer-events:auto;background:var(--ink);color:var(--bg);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:.88rem;max-width:360px;width:100%}
+.toast-undo{background:none;border:1px solid rgba(10,15,26,.3);color:var(--bg);border-radius:8px;padding:6px 12px;font-family:var(--font-body);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:auto}
+.toast-undo:hover{background:rgba(10,15,26,.1)}
 .empty-state{padding:60px 24px;text-align:center;color:var(--ink-2)}
 .loading{padding:60px 24px;text-align:center;color:var(--ink-2);font-family:var(--font-mono);font-size:.85rem}
 
@@ -192,6 +197,8 @@ select.estado-select{padding:10px;border-radius:8px;border:1px solid var(--borde
     <div class="leads-cards" id="leads-cards"></div>
   </main>
 </div>
+
+<div class="toast-container" id="toast-container"></div>
 
 <script>
 // --- Configura tu proyecto de Supabase (ver setup.md) ---
@@ -343,18 +350,56 @@ function makeNotasField(lead){
   return wrap;
 }
 
-function makeDeleteButton(lead, onDeleted){
+function showUndoToast(message, onUndo, onExpire){
+  var container = document.getElementById('toast-container');
+  var toast = document.createElement('div');
+  toast.className = 'toast';
+  var text = document.createElement('span');
+  text.textContent = message;
+  var undoBtn = document.createElement('button');
+  undoBtn.type = 'button';
+  undoBtn.className = 'toast-undo';
+  var seconds = 5;
+  undoBtn.textContent = 'Deshacer (' + seconds + ')';
+  toast.appendChild(text);
+  toast.appendChild(undoBtn);
+  container.appendChild(toast);
+
+  var finished = false;
+  var tick = setInterval(function(){
+    seconds -= 1;
+    if (seconds <= 0){
+      clearInterval(tick);
+      if (!finished){ finished = true; toast.remove(); onExpire(); }
+      return;
+    }
+    undoBtn.textContent = 'Deshacer (' + seconds + ')';
+  }, 1000);
+
+  undoBtn.addEventListener('click', function(){
+    if (finished) return;
+    finished = true;
+    clearInterval(tick);
+    toast.remove();
+    onUndo();
+  });
+}
+
+function makeDeleteButton(lead, node){
   var btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'delete-btn';
   btn.textContent = 'Eliminar';
   btn.addEventListener('click', function(){
-    var quien = lead.nombre || lead.empresa || 'este lead';
-    if (!window.confirm('¿Eliminar ' + quien + '? No se puede deshacer.')) return;
-    btn.disabled = true;
-    supabaseClient.from('leads').delete().eq('id', lead.id).then(function(res){
-      if (res.error){ btn.disabled = false; window.alert('No se pudo eliminar: ' + res.error.message); return; }
-      onDeleted();
+    var quien = lead.nombre || lead.empresa || 'Lead';
+    node.style.display = 'none';
+    showUndoToast(quien + ' eliminado', function(){
+      node.style.display = '';
+    }, function(){
+      supabaseClient.from('leads').delete().eq('id', lead.id).then(function(res){
+        if (res.error){ node.style.display = ''; window.alert('No se pudo eliminar: ' + res.error.message); return; }
+        node.remove();
+      });
     });
   });
   return btn;
@@ -453,7 +498,7 @@ function buildLeadCard(lead){
 
   var deleteWrap = document.createElement('div');
   deleteWrap.className = 'lead-detail-row';
-  deleteWrap.appendChild(makeDeleteButton(lead, function(){ details.remove(); }));
+  deleteWrap.appendChild(makeDeleteButton(lead, details));
   body.appendChild(deleteWrap);
 
   details.appendChild(body);
@@ -551,7 +596,7 @@ function loadLeads(){
 
       var tdAcciones = document.createElement('td');
       tdAcciones.setAttribute('data-label', '');
-      tdAcciones.appendChild(makeDeleteButton(lead, function(){ tr.remove(); }));
+      tdAcciones.appendChild(makeDeleteButton(lead, tr));
       tr.appendChild(tdAcciones);
 
       body.appendChild(tr);
