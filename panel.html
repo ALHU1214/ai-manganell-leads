@@ -123,16 +123,16 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 /* Tarjetas de leads para móvil: lista compacta, cada una se expande al tocarla */
 .leads-cards{display:none}
 .lead-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
-.lead-card summary{list-style:none;cursor:pointer;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lead-card summary{list-style:none;cursor:pointer;padding:14px;display:flex;align-items:center;gap:10px}
 .lead-card summary::-webkit-details-marker{display:none}
 .lead-card summary::after{content:'';width:9px;height:9px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);transition:transform .2s;flex-shrink:0;margin-left:4px}
 .lead-card[open] summary::after{transform:rotate(-135deg)}
-.lead-summary-main{min-width:0}
+.lead-summary-main{min-width:0;flex:1}
 .lead-summary-main .lead-name{display:flex;align-items:center;font-weight:700;font-size:.98rem;overflow:hidden}
 .lead-summary-main .lead-name-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lead-summary-main .lead-company{display:block;font-size:.8rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lead-summary-side{flex-shrink:0;text-align:right}
-.lead-summary-side .lead-date{display:block;font-family:var(--font-mono);font-size:.66rem;color:var(--ink-3);margin-top:5px}
+.lead-summary-side{flex-shrink:0;text-align:right;width:118px}
+.lead-summary-side .lead-date{display:block;font-family:var(--font-mono);font-size:.66rem;color:var(--ink-3);margin-top:5px;white-space:nowrap}
 .estado-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-family:var(--font-mono);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
 .estado-pill.estado-Nuevo{background:rgba(34,211,238,.15);color:var(--accent)}
 .estado-pill.estado-Contactado{background:rgba(234,179,8,.15);color:#eab308}
