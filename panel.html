@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Panel de leads — AI Manganell</title>
+<title>AM Leads</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=2">
 <meta name="theme-color" content="#0a0f1a">
-<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="assets/icon.svg">
+<link rel="icon" href="assets/icon-192.png?v=2" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon-180.png?v=2">
+<meta name="apple-mobile-web-app-title" content="AM Leads">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bricolage+Grotesque:wght@600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -53,7 +55,7 @@ a{color:var(--accent)}
 header.panel-header{background:var(--panel);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:10}
 .panel-header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px}
 .logo{font-family:var(--font-display);font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:10px}
-.logo-mark{width:32px;height:32px;flex-shrink:0;border-radius:50%;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#04222c;font-family:var(--font-mono);font-weight:700;font-size:.68rem}
+.logo-mark{width:32px;height:32px;flex-shrink:0;border-radius:50%;display:block;object-fit:cover}
 .header-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px}
 .logout-btn{background:none;border:1px solid var(--border-2);border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;color:var(--ink-2);cursor:pointer}
 .logout-btn:hover{color:var(--ink);border-color:var(--ink-2)}
@@ -187,7 +189,7 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 <div class="panel-screen" id="panel-screen">
   <header class="panel-header">
     <div class="wrap">
-      <div class="logo"><span class="logo-mark">AM</span>Panel de leads</div>
+      <div class="logo"><img class="logo-mark" src="assets/icon-192.png?v=2" alt="AM Leads">Panel de leads</div>
       <div class="header-actions">
         <span class="notif-status" id="notif-status"></span>
         <button class="notif-btn" id="notif-btn" style="display:none">Activar notificaciones</button>

@@ -16,8 +16,8 @@ self.addEventListener('push', function(event){
   var title = data.title || 'Nuevo lead';
   var options = {
     body: data.body || 'Ha entrado un lead nuevo.',
-    icon: 'assets/icon.svg',
-    badge: 'assets/icon.svg',
+    icon: 'assets/icon-192.png',
+    badge: 'assets/icon-192.png',
     data: { url: data.url || 'panel.html' },
     tag: data.tag || 'nuevo-lead',
     renotify: true,
