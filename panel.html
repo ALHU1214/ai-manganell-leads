@@ -135,6 +135,10 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 
 .add-lead-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .add-lead-btn:hover{opacity:.92}
+.refresh-btn{background:none;border:1px solid var(--border-2);border-radius:10px;width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;color:var(--ink-2);cursor:pointer}
+.refresh-btn:hover{color:var(--ink);border-color:var(--ink-2)}
+.refresh-btn.spin{animation:girar .7s linear infinite;color:var(--accent);border-color:var(--accent)}
+@keyframes girar{to{transform:rotate(360deg)}}
 
 /* Modal para añadir un lead a mano */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,8,14,.65);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);z-index:200;align-items:center;justify-content:center;padding:20px}
@@ -209,6 +213,8 @@ body.modal-open{overflow:hidden}
   .panel-title h2{font-size:1.25rem}
   .title-actions{width:100%;justify-content:space-between;gap:8px}
   .add-lead-btn{min-height:44px;padding:11px 16px;font-size:.88rem}
+  .refresh-btn{width:44px;height:44px;font-size:1.2rem}
+  .title-actions .add-lead-btn{margin-left:auto}
 
   /* El formulario de "añadir lead" se comporta como una hoja que sube desde abajo */
   .modal-overlay{align-items:flex-end;padding:0}
@@ -282,6 +288,7 @@ body.modal-open{overflow:hidden}
       <h2>Leads recibidos</h2>
       <div class="title-actions">
         <span class="count-badge" id="count-badge">0 leads</span>
+        <button type="button" class="refresh-btn" id="refresh-btn" aria-label="Actualizar lista de leads" title="Actualizar">↻</button>
         <button type="button" class="add-lead-btn" id="add-lead-btn">+ Añadir lead</button>
       </div>
     </div>
@@ -934,18 +941,59 @@ function renderLeads(leads, isFiltered){
     table.style.display = 'table';
 }
 
-function loadLeads(){
+function loadLeads(silencioso){
   var loading = document.getElementById('loading');
   var empty = document.getElementById('empty-state');
-  loading.style.display = 'block';
-  empty.style.display = 'none';
+  if (!silencioso){
+    loading.style.display = 'block';
+    empty.style.display = 'none';
+  }
 
   supabaseClient.from('leads').select('*').order('created_at',{ascending:false}).then(function(res){
     loading.style.display = 'none';
-    if(res.error){ empty.textContent = 'Error cargando leads: ' + res.error.message; empty.style.display = 'block'; return; }
+    if(res.error){
+      // En una recarga de fondo no se borra la lista que ya se está viendo.
+      if (silencioso) return;
+      empty.textContent = 'Error cargando leads: ' + res.error.message; empty.style.display = 'block'; return;
+    }
     allLeads = res.data || [];
     updateCountBadge();
     applyFilters();
+  });
+}
+
+// El panel leía los leads una sola vez, al entrar. Si llegaba uno nuevo mientras
+// la app estaba abierta (o en segundo plano), al volver a ella se seguía viendo
+// la lista vieja aunque hubiera sonado la notificación. Ahora se recarga sola.
+var ultimaRecarga = 0;
+function refrescarLeads(){
+  if (panelScreen.style.display !== 'block') return;
+  if (document.hidden) return;
+  if (Date.now() - ultimaRecarga < 1500) return; // evita recargar dos veces seguidas
+  ultimaRecarga = Date.now();
+  loadLeads(true);
+}
+
+document.getElementById('refresh-btn').addEventListener('click', function(){
+  var btn = this;
+  btn.classList.add('spin');
+  ultimaRecarga = 0;
+  refrescarLeads();
+  setTimeout(function(){ btn.classList.remove('spin'); }, 700);
+});
+
+document.addEventListener('visibilitychange', function(){
+  if (!document.hidden) refrescarLeads();
+});
+window.addEventListener('focus', refrescarLeads);
+window.addEventListener('pageshow', function(e){ if (e.persisted) refrescarLeads(); });
+
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', function(e){
+    if (e.data && e.data.type === 'nuevo-lead'){
+      ultimaRecarga = 0; // un lead nuevo se recarga siempre, sin esperar
+      refrescarLeads();
+    }
   });
 }
 

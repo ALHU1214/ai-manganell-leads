@@ -1,5 +1,15 @@
 // Service worker del panel de leads — AI Manganell
-// Solo hace dos cosas: mostrar la notificación push que llega, y abrir el panel al tocarla.
+// Muestra la notificación push que llega, abre el panel al tocarla y avisa al
+// panel de que hay un lead nuevo para que recargue la lista (si no, la app se
+// queda con la lista de cuando se abrió y el lead nuevo no aparece).
+
+function avisarAlPanel(){
+  return self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clients){
+    clients.forEach(function(client){
+      client.postMessage({ type: 'nuevo-lead' });
+    });
+  });
+}
 
 self.addEventListener('install', function(event){
   self.skipWaiting();
@@ -25,7 +35,9 @@ self.addEventListener('push', function(event){
     vibrate: [200, 100, 200]
   };
 
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(title, options).then(avisarAlPanel)
+  );
 });
 
 self.addEventListener('notificationclick', function(event){
@@ -37,6 +49,8 @@ self.addEventListener('notificationclick', function(event){
       for (var i = 0; i < clients.length; i++){
         var client = clients[i];
         if (client.url.indexOf('panel.html') !== -1 && 'focus' in client){
+          // Traerla al frente no basta: hay que pedirle que recargue la lista.
+          client.postMessage({ type: 'nuevo-lead' });
           return client.focus();
         }
       }
