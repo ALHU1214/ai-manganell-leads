@@ -122,6 +122,23 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 .empty-state{padding:60px 24px;text-align:center;color:var(--ink-2)}
 .loading{padding:60px 24px;text-align:center;color:var(--ink-2);font-family:var(--font-mono);font-size:.85rem}
 
+.add-lead-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.add-lead-btn:hover{opacity:.92}
+
+/* Modal para añadir un lead a mano */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,8,14,.6);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-card{width:100%;max-width:440px;max-height:90vh;overflow-y:auto;background:var(--panel);border:1px solid var(--border-2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:26px}
+.modal-card h3{font-size:1.15rem;margin-bottom:18px}
+.modal-card select{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
+.modal-card textarea{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px;resize:vertical;min-height:70px}
+.modal-card select:focus,.modal-card textarea:focus{outline:none;border-color:var(--accent)}
+.modal-actions{display:flex;gap:10px;margin-top:6px}
+.modal-actions .login-btn{flex:1}
+.modal-cancel-btn{flex:1;background:none;border:1px solid var(--border-2);color:var(--ink-2);font-weight:600;font-size:.9rem;padding:14px;border-radius:10px;cursor:pointer;min-height:48px}
+.modal-cancel-btn:hover{color:var(--ink);border-color:var(--ink-2)}
+.modal-error{color:var(--red);font-size:.85rem;text-align:center;margin-top:14px;display:none}
+
 /* Tarjetas de leads para móvil: lista compacta, cada una se expande al tocarla */
 .leads-cards{display:none}
 .lead-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
@@ -201,7 +218,10 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
   <main class="wrap">
     <div class="panel-title">
       <h2>Leads recibidos</h2>
-      <span class="count-badge" id="count-badge">0 leads</span>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="count-badge" id="count-badge">0 leads</span>
+        <button type="button" class="add-lead-btn" id="add-lead-btn">+ Añadir lead</button>
+      </div>
     </div>
     <div class="leads-toolbar">
       <input type="search" id="search-input" class="search-input" placeholder="Buscar por nombre, empresa o email…">
@@ -237,6 +257,51 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
     </div>
     <div class="leads-cards" id="leads-cards"></div>
   </main>
+</div>
+
+<div class="modal-overlay" id="add-lead-overlay">
+  <div class="modal-card">
+    <h3>Añadir lead manualmente</h3>
+    <form id="add-lead-form">
+      <div class="field">
+        <label for="al-nombre">Nombre</label>
+        <input type="text" id="al-nombre" required>
+      </div>
+      <div class="field">
+        <label for="al-empresa">Empresa</label>
+        <input type="text" id="al-empresa">
+      </div>
+      <div class="field">
+        <label for="al-email">Email</label>
+        <input type="email" id="al-email">
+      </div>
+      <div class="field">
+        <label for="al-telefono">Teléfono</label>
+        <input type="tel" id="al-telefono">
+      </div>
+      <div class="field">
+        <label for="al-mensaje">Mensaje</label>
+        <textarea id="al-mensaje"></textarea>
+      </div>
+      <div class="field">
+        <label for="al-origen">Origen</label>
+        <select id="al-origen">
+          <option value="Manual" selected>Manual</option>
+          <option value="Landing web">Landing web (hero)</option>
+          <option value="Consultoría">Consultoría</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="al-notas">Notas</label>
+        <textarea id="al-notas"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel-btn" id="add-lead-cancel">Cancelar</button>
+        <button type="submit" class="login-btn">Guardar</button>
+      </div>
+      <p class="modal-error" id="add-lead-error">No se pudo guardar el lead.</p>
+    </form>
+  </div>
 </div>
 
 <div class="toast-container" id="toast-container"></div>
@@ -759,6 +824,71 @@ function loadLeads(){
     applyFilters();
   });
 }
+
+// --- Añadir lead manualmente ---
+var addLeadBtn = document.getElementById('add-lead-btn');
+var addLeadOverlay = document.getElementById('add-lead-overlay');
+var addLeadForm = document.getElementById('add-lead-form');
+var addLeadCancel = document.getElementById('add-lead-cancel');
+var addLeadError = document.getElementById('add-lead-error');
+var addLeadSubmitBtn = addLeadForm.querySelector('.login-btn');
+
+function openAddLeadModal(){
+  addLeadForm.reset();
+  addLeadError.style.display = 'none';
+  addLeadOverlay.classList.add('show');
+  document.getElementById('al-nombre').focus();
+}
+function closeAddLeadModal(){
+  addLeadOverlay.classList.remove('show');
+}
+
+addLeadBtn.addEventListener('click', openAddLeadModal);
+addLeadCancel.addEventListener('click', closeAddLeadModal);
+addLeadOverlay.addEventListener('click', function(e){
+  if (e.target === addLeadOverlay) closeAddLeadModal();
+});
+
+addLeadForm.addEventListener('submit', function(e){
+  e.preventDefault();
+  var nombre = document.getElementById('al-nombre').value.trim();
+  var empresa = document.getElementById('al-empresa').value.trim();
+  var email = document.getElementById('al-email').value.trim();
+  var telefono = document.getElementById('al-telefono').value.trim();
+  var mensaje = document.getElementById('al-mensaje').value.trim();
+  var origen = document.getElementById('al-origen').value;
+  var notas = document.getElementById('al-notas').value.trim();
+
+  if (!nombre){
+    addLeadError.textContent = 'Ponle al menos un nombre.';
+    addLeadError.style.display = 'block';
+    return;
+  }
+
+  addLeadSubmitBtn.disabled = true;
+  addLeadError.style.display = 'none';
+
+  supabaseClient.from('leads').insert({
+    nombre: nombre,
+    empresa: empresa || null,
+    email: email || null,
+    telefono: telefono || null,
+    mensaje: mensaje || null,
+    origen: origen,
+    notas: notas || null
+  }).select().then(function(res){
+    addLeadSubmitBtn.disabled = false;
+    if (res.error || !res.data || !res.data[0]){
+      addLeadError.textContent = 'No se pudo guardar: ' + (res.error ? res.error.message : 'error desconocido');
+      addLeadError.style.display = 'block';
+      return;
+    }
+    allLeads.unshift(res.data[0]);
+    updateCountBadge();
+    applyFilters();
+    closeAddLeadModal();
+  });
+});
 
 // --- Notificaciones push (ver setup.md, Paso 5) ---
 var VAPID_PUBLIC_KEY = 'BLYBjtqIaiH_CTZP2pZg2fJaMe7D8mVuY2eiUIJPMj33n3_KSUpQNQEAKX_2SrDL-tmKpKeiOI1fKEZSE8uTbW4';
