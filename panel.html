@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>AM Leads</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.json?v=3">
@@ -25,14 +25,22 @@
   --font-display:'Bricolage Grotesque','Archivo',system-ui,sans-serif;
   --font-body:'Archivo',system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  /* Márgenes seguros del móvil (notch, barra inferior) */
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
+  --gutter:20px;
 }
-body{background:var(--bg-soft);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg-soft);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;overscroll-behavior-y:none}
 h1,h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;color:var(--ink)}
 a{color:var(--accent)}
-.wrap{max-width:1200px;width:94%;margin:0 auto}
+button,summary,select,a{-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1200px;width:100%;margin:0 auto;padding-left:calc(var(--gutter) + var(--safe-l));padding-right:calc(var(--gutter) + var(--safe-r))}
 
 /* LOGIN */
-.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-screen{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(24px + var(--safe-t)) calc(20px + var(--safe-r)) calc(24px + var(--safe-b)) calc(20px + var(--safe-l))}
 .login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--border-2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:38px}
 .login-card h1{font-size:1.5rem;margin-bottom:6px;text-align:center}
 .login-card p.sub{color:var(--ink-2);font-size:.9rem;text-align:center;margin-bottom:26px}
@@ -52,21 +60,24 @@ a{color:var(--accent)}
 
 /* PANEL */
 .panel-screen{display:none}
-header.panel-header{background:var(--panel);border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:10}
-.panel-header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px}
-.logo{font-family:var(--font-display);font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:10px}
+header.panel-header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 0;padding-top:calc(12px + var(--safe-t));position:sticky;top:0;z-index:10}
+.panel-header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}
+.logo{font-family:var(--font-display);font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:10px;min-width:0}
 .logo-mark{width:32px;height:32px;flex-shrink:0;border-radius:50%;display:block;object-fit:cover}
-.header-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px}
+.logo-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-actions{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .logout-btn{background:none;border:1px solid var(--border-2);border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;color:var(--ink-2);cursor:pointer}
 .logout-btn:hover{color:var(--ink);border-color:var(--ink-2)}
 .notif-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
 .notif-btn:hover{opacity:.92}
 .notif-btn[disabled]{background:var(--border-2);color:var(--ink-3);cursor:default}
-.notif-status{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-3);width:100%}
+.notif-status{font-family:var(--font-mono);font-size:.7rem;line-height:1.35;color:var(--ink-3);flex:0 0 100%;text-align:right}
+.notif-status:empty{display:none}
 
-main{padding:24px 0 60px}
-.panel-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+main{padding:24px 0 60px;padding-bottom:calc(60px + var(--safe-b))}
+.panel-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px;margin-bottom:16px}
 .panel-title h2{font-size:1.4rem}
+.title-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .count-badge{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-2);background:var(--panel);padding:6px 14px;border-radius:999px;white-space:nowrap}
 
 .leads-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
@@ -115,7 +126,7 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 .delete-btn[disabled]{opacity:.5;cursor:default}
 .lead-detail-row .delete-btn{width:100%;min-height:44px}
 
-.toast-container{position:fixed;left:0;right:0;bottom:20px;display:flex;flex-direction:column;align-items:center;gap:8px;z-index:100;padding:0 16px;pointer-events:none}
+.toast-container{position:fixed;left:0;right:0;bottom:calc(20px + var(--safe-b));display:flex;flex-direction:column;align-items:center;gap:8px;z-index:300;padding:0 16px;pointer-events:none}
 .toast{pointer-events:auto;background:var(--ink);color:var(--bg);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:.88rem;max-width:360px;width:100%}
 .toast-undo{background:none;border:1px solid rgba(10,15,26,.3);color:var(--bg);border-radius:8px;padding:6px 12px;font-family:var(--font-body);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:auto}
 .toast-undo:hover{background:rgba(10,15,26,.1)}
@@ -126,10 +137,12 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 .add-lead-btn:hover{opacity:.92}
 
 /* Modal para añadir un lead a mano */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,8,14,.6);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,8,14,.65);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);z-index:200;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.show{display:flex}
-.modal-card{width:100%;max-width:440px;max-height:90vh;overflow-y:auto;background:var(--panel);border:1px solid var(--border-2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:26px}
+.modal-card{width:100%;max-width:440px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--panel);border:1px solid var(--border-2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:26px}
 .modal-card h3{font-size:1.15rem;margin-bottom:18px}
+.modal-grab{display:none;width:40px;height:4px;border-radius:999px;background:var(--border-2);margin:0 auto 14px}
+body.modal-open{overflow:hidden}
 .modal-card select{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
 .modal-card textarea{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px;resize:vertical;min-height:70px}
 .modal-card select:focus,.modal-card textarea:focus{outline:none;border-color:var(--accent)}
@@ -142,39 +155,88 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 /* Tarjetas de leads para móvil: lista compacta, cada una se expande al tocarla */
 .leads-cards{display:none}
 .lead-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
-.lead-card summary{list-style:none;cursor:pointer;padding:14px;display:flex;align-items:center;gap:10px}
+.lead-card[open]{border-color:var(--border-2)}
+.lead-card summary{list-style:none;cursor:pointer;padding:14px 14px;min-height:64px;display:flex;align-items:center;gap:10px}
 .lead-card summary::-webkit-details-marker{display:none}
-.lead-card summary::after{content:'';width:9px;height:9px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);transition:transform .2s;flex-shrink:0;margin-left:4px}
+.lead-card summary:active{background:var(--bg-soft)}
+.lead-card summary::after{content:'';width:9px;height:9px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);transition:transform .2s;flex-shrink:0;margin:0 2px 0 2px}
 .lead-card[open] summary::after{transform:rotate(-135deg)}
 .lead-summary-main{min-width:0;flex:1}
-.lead-summary-main .lead-name{display:flex;align-items:center;font-weight:700;font-size:.98rem;overflow:hidden}
+.lead-summary-main .lead-name{display:flex;align-items:center;font-weight:700;font-size:1rem;line-height:1.3;overflow:hidden}
 .lead-summary-main .lead-name-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lead-summary-main .lead-company{display:block;font-size:.8rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lead-summary-side{flex-shrink:0;text-align:right;width:118px}
-.lead-summary-side .lead-date{display:block;font-family:var(--font-mono);font-size:.66rem;color:var(--ink-3);margin-top:5px;white-space:nowrap}
-.estado-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-family:var(--font-mono);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+.lead-summary-main .lead-meta{display:block;font-size:.8rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.lead-summary-main .lead-meta .lead-date{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-3)}
+.lead-summary-side{flex-shrink:0;display:flex;align-items:center}
+.estado-pill{display:inline-block;padding:5px 10px;border-radius:999px;font-family:var(--font-mono);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
 .estado-pill.estado-Nuevo{background:rgba(34,211,238,.15);color:var(--accent)}
 .estado-pill.estado-Contactado{background:rgba(234,179,8,.15);color:#eab308}
 .estado-pill.estado-Agendado,.estado-pill.estado-Cliente{background:rgba(52,211,153,.15);color:var(--green)}
 .estado-pill.estado-Descartado{background:rgba(101,112,137,.15);color:var(--ink-3)}
-.lead-detail{padding:0 14px 16px;border-top:1px solid var(--border)}
+.lead-detail{padding:2px 14px 16px;border-top:1px solid var(--border)}
 .lead-detail-row{padding-top:14px}
-.lead-detail-row .dl-label{display:block;font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:4px}
-.lead-detail-row .dl-value{font-size:.92rem;word-break:break-word}
+.lead-detail-row .dl-label{display:block;font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:5px}
+.lead-detail-row .dl-value{font-size:.94rem;line-height:1.5;word-break:break-word}
 .lead-detail-row select.estado-select{width:100%}
-.lead-detail-row textarea{width:100%;min-height:80px;padding:10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;resize:vertical}
+.lead-detail-row textarea{width:100%;min-height:88px;padding:12px;border-radius:10px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;resize:vertical}
 .lead-detail-row textarea:focus{outline:none;border-color:var(--accent)}
+/* Acciones rápidas dentro de la tarjeta: llamar, WhatsApp, email */
+.lead-actions{display:flex;gap:8px;padding-top:14px}
+.lead-action{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:10px 8px;border-radius:10px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap}
+.lead-action.is-wa{border-color:rgba(37,211,102,.35);color:#25d366;background:rgba(37,211,102,.08)}
+.lead-action:active{opacity:.7}
 
 /* Pantallas estrechas o medianas: se oculta la tabla (evita el scroll horizontal), se muestran las tarjetas */
 @media (max-width: 960px){
-  .wrap{width:92%}
-  main{padding:18px 0 48px}
+  :root{--gutter:16px}
+  main{padding:18px 0 48px;padding-bottom:calc(48px + var(--safe-b))}
   .leads-table-wrap{display:none}
   .leads-cards{display:block}
-  .leads-toolbar{flex-direction:column}
+  .leads-toolbar{flex-direction:column;gap:8px;margin-bottom:14px}
   .search-input, .estado-filter{flex:1 1 auto;width:100%}
   .count-badge.has-nuevos{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:var(--ink);font-weight:600}
   .count-badge .badge-nuevos{color:#22c55e;font-weight:800}
+
+  /* Cabecera compacta: el logo a la izquierda y los botones a la derecha, sin desbordar */
+  header.panel-header{padding:10px 0;padding-top:calc(10px + var(--safe-t))}
+  .panel-header .wrap{gap:6px 10px}
+  .logo{font-size:1rem;flex:1 1 auto}
+  .logo-mark{width:28px;height:28px}
+  .header-actions{gap:6px}
+  .logout-btn,.notif-btn,.passkey-btn{padding:9px 12px;font-size:.8rem;min-height:40px;border-radius:9px}
+  #passkey-login-btn{padding:13px;font-size:.9rem}
+
+  .panel-title{margin-bottom:14px}
+  .panel-title h2{font-size:1.25rem}
+  .title-actions{width:100%;justify-content:space-between;gap:8px}
+  .add-lead-btn{min-height:44px;padding:11px 16px;font-size:.88rem}
+
+  /* El formulario de "añadir lead" se comporta como una hoja que sube desde abajo */
+  .modal-overlay{align-items:flex-end;padding:0}
+  .modal-card{max-width:none;max-height:88dvh;border-radius:18px 18px 0 0;border-left:none;border-right:none;border-bottom:none;padding:14px 18px calc(18px + var(--safe-b));animation:sheet-up .22s ease-out}
+  .modal-grab{display:block}
+  .modal-card h3{font-size:1.05rem;margin-bottom:14px}
+  .field{margin-bottom:14px}
+  .modal-actions{position:sticky;bottom:0;background:var(--panel);padding-top:10px;margin-top:10px}
+}
+@keyframes sheet-up{from{transform:translateY(14px);opacity:.6}to{transform:translateY(0);opacity:1}}
+@media (prefers-reduced-motion: reduce){
+  .modal-card{animation:none}
+  .lead-card summary::after{transition:none}
+}
+
+/* Móviles pequeños: se aprieta todo un poco más y el título ocupa su propia línea */
+@media (max-width: 480px){
+  :root{--gutter:14px}
+  .login-card{padding:26px 20px}
+  .login-card h1{font-size:1.35rem}
+  .panel-title{gap:8px}
+  .panel-title h2{font-size:1.15rem;width:100%}
+  .logo-text{display:none}
+  .lead-card summary{padding:13px 12px;gap:8px}
+  .lead-summary-main .lead-name{font-size:.95rem}
+  .lead-detail{padding:2px 12px 14px}
+  .lead-action{font-size:.78rem;padding:10px 4px}
+  .toast{font-size:.84rem;padding:11px 12px}
 }
 </style>
 </head>
@@ -206,7 +268,7 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 <div class="panel-screen" id="panel-screen">
   <header class="panel-header">
     <div class="wrap">
-      <div class="logo"><img class="logo-mark" src="assets/icon-192.png?v=3" alt="AM Leads">Panel de leads</div>
+      <div class="logo"><img class="logo-mark" src="assets/icon-192.png?v=3" alt="AM Leads"><span class="logo-text">Panel de leads</span></div>
       <div class="header-actions">
         <span class="notif-status" id="notif-status"></span>
         <button class="notif-btn" id="notif-btn" style="display:none">Activar notificaciones</button>
@@ -218,7 +280,7 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
   <main class="wrap">
     <div class="panel-title">
       <h2>Leads recibidos</h2>
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div class="title-actions">
         <span class="count-badge" id="count-badge">0 leads</span>
         <button type="button" class="add-lead-btn" id="add-lead-btn">+ Añadir lead</button>
       </div>
@@ -261,6 +323,7 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 
 <div class="modal-overlay" id="add-lead-overlay">
   <div class="modal-card">
+    <div class="modal-grab" aria-hidden="true"></div>
     <h3>Añadir lead manualmente</h3>
     <form id="add-lead-form">
       <div class="field">
@@ -452,6 +515,24 @@ function fmtFecha(iso){
     d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 }
 
+// Fecha compacta para la línea de resumen de la tarjeta: "hoy · 14:30", "ayer · 09:12", "12 ago · 14:30"
+function fmtFechaMovil(iso){
+  var d = new Date(iso);
+  var hora = d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  var hoy = new Date();
+  var mismoDia = function(a,b){
+    return a.getDate()===b.getDate() && a.getMonth()===b.getMonth() && a.getFullYear()===b.getFullYear();
+  };
+  if (mismoDia(d,hoy)) return 'hoy · ' + hora;
+  var ayer = new Date(hoy.getTime() - 86400000);
+  if (mismoDia(d,ayer)) return 'ayer · ' + hora;
+  var dia = d.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+  if (d.getFullYear() !== hoy.getFullYear()){
+    dia = d.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'});
+  }
+  return dia + ' · ' + hora;
+}
+
 function fmtFechaCorta(iso){
   var d = new Date(iso);
   return {
@@ -581,6 +662,36 @@ function makeDeleteButton(lead, node){
   return btn;
 }
 
+// Botonera de la tarjeta: llamar / WhatsApp / email, con el dedo en mente
+function makeCardActions(lead){
+  var digits = (lead.telefono || '').replace(/[^0-9+]/g,'');
+  if (!digits && !lead.email) return null;
+  var row = document.createElement('div');
+  row.className = 'lead-actions';
+  if (digits){
+    var call = document.createElement('a');
+    call.className = 'lead-action';
+    call.href = 'tel:' + digits;
+    call.textContent = '📞 Llamar';
+    row.appendChild(call);
+    var wa = document.createElement('a');
+    wa.className = 'lead-action is-wa';
+    wa.href = 'https://wa.me/' + digits.replace(/^\+/,'');
+    wa.target = '_blank';
+    wa.rel = 'noopener';
+    wa.textContent = 'WhatsApp';
+    row.appendChild(wa);
+  }
+  if (lead.email){
+    var mail = document.createElement('a');
+    mail.className = 'lead-action';
+    mail.href = 'mailto:' + lead.email;
+    mail.textContent = '✉️ Email';
+    row.appendChild(mail);
+  }
+  return row;
+}
+
 function detailRow(label, valueNode){
   var row = document.createElement('div');
   row.className = 'lead-detail-row';
@@ -618,12 +729,17 @@ function buildLeadCard(lead){
   nameText.textContent = lead.nombre || lead.empresa || 'Sin nombre';
   name.appendChild(nameText);
   main.appendChild(name);
+  // Empresa y fecha comparten una sola línea para dejarle todo el ancho al nombre
+  var meta = document.createElement('span');
+  meta.className = 'lead-meta';
   if (lead.empresa && lead.nombre){
-    var company = document.createElement('span');
-    company.className = 'lead-company';
-    company.textContent = lead.empresa;
-    main.appendChild(company);
+    meta.appendChild(document.createTextNode(lead.empresa + ' · '));
   }
+  var metaDate = document.createElement('span');
+  metaDate.className = 'lead-date';
+  metaDate.textContent = fmtFechaMovil(lead.created_at);
+  meta.appendChild(metaDate);
+  main.appendChild(meta);
   summary.appendChild(main);
 
   var side = document.createElement('div');
@@ -632,16 +748,15 @@ function buildLeadCard(lead){
   pill.className = 'estado-pill estado-' + (lead.estado || 'Nuevo');
   pill.textContent = lead.estado || 'Nuevo';
   side.appendChild(pill);
-  var date = document.createElement('span');
-  date.className = 'lead-date';
-  date.textContent = fmtFecha(lead.created_at);
-  side.appendChild(date);
   summary.appendChild(side);
 
   details.appendChild(summary);
 
   var body = document.createElement('div');
   body.className = 'lead-detail';
+
+  var actions = makeCardActions(lead);
+  if (actions) body.appendChild(actions);
 
   var emailNode = document.createElement('div');
   emailNode.className = 'dl-value';
@@ -653,8 +768,17 @@ function buildLeadCard(lead){
   } else { emailNode.textContent = '—'; }
   body.appendChild(detailRow('Email', emailNode));
 
-  body.appendChild(detailRow('Teléfono', makePhoneNode(lead.telefono)));
+  var telNode = document.createElement('div');
+  telNode.className = 'dl-value';
+  if (lead.telefono){
+    var aTel = document.createElement('a');
+    aTel.href = 'tel:' + lead.telefono.replace(/[^0-9+]/g,'');
+    aTel.textContent = lead.telefono;
+    telNode.appendChild(aTel);
+  } else { telNode.textContent = '—'; }
+  body.appendChild(detailRow('Teléfono', telNode));
 
+  body.appendChild(detailRow('Fecha', fmtFecha(lead.created_at)));
   body.appendChild(detailRow('Mensaje', lead.mensaje || '—'));
   body.appendChild(detailRow('Origen', lead.origen || '—'));
   body.appendChild(detailRow('Estado', makeEstadoSelect(lead, function(value){
@@ -837,16 +961,21 @@ function openAddLeadModal(){
   addLeadForm.reset();
   addLeadError.style.display = 'none';
   addLeadOverlay.classList.add('show');
+  document.body.classList.add('modal-open');
   document.getElementById('al-nombre').focus();
 }
 function closeAddLeadModal(){
   addLeadOverlay.classList.remove('show');
+  document.body.classList.remove('modal-open');
 }
 
 addLeadBtn.addEventListener('click', openAddLeadModal);
 addLeadCancel.addEventListener('click', closeAddLeadModal);
 addLeadOverlay.addEventListener('click', function(e){
   if (e.target === addLeadOverlay) closeAddLeadModal();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && addLeadOverlay.classList.contains('show')) closeAddLeadModal();
 });
 
 addLeadForm.addEventListener('submit', function(e){
