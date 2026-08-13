@@ -97,16 +97,17 @@ th{text-align:left;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.
 td{padding:14px 10px;border-bottom:1px solid var(--border);font-size:.92rem;vertical-align:top;overflow-wrap:break-word}
 tr:last-child td{border-bottom:none}
 tr:hover{background:var(--bg-soft)}
-th:nth-child(1),td:nth-child(1){width:10%}
-th:nth-child(2),td:nth-child(2){width:11%}
+th:nth-child(1),td:nth-child(1){width:9%}
+th:nth-child(2),td:nth-child(2){width:10%}
 th:nth-child(3),td:nth-child(3){width:7%}
-th:nth-child(4),td:nth-child(4){width:12%}
-th:nth-child(5),td:nth-child(5){width:11%}
-th:nth-child(6),td:nth-child(6){width:11%}
+th:nth-child(4),td:nth-child(4){width:11%}
+th:nth-child(5),td:nth-child(5){width:10%}
+th:nth-child(6),td:nth-child(6){width:9%}
 th:nth-child(7),td:nth-child(7){width:4%}
-th:nth-child(8),td:nth-child(8){width:12%}
-th:nth-child(9),td:nth-child(9){width:9%}
-th:nth-child(10),td:nth-child(10){width:13%}
+th:nth-child(8),td:nth-child(8){width:11%}
+th:nth-child(9),td:nth-child(9){width:10%}
+th:nth-child(10),td:nth-child(10){width:9%}
+th:nth-child(11),td:nth-child(11){width:10%}
 .cell-fecha{color:var(--ink-3);font-family:var(--font-mono);font-size:.72rem;line-height:1.4}
 .cell-fecha div{white-space:nowrap}
 .cell-nombre{font-weight:600}
@@ -119,6 +120,10 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 .estado-Agendado{color:var(--green)}
 .estado-Cliente{color:var(--green)}
 .estado-Descartado{color:var(--ink-3)}
+.reunion-input{width:100%;max-width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;min-height:44px}
+.reunion-input:focus{outline:none;border-color:var(--accent)}
+.reunion-input::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.6);cursor:pointer}
+.reunion-chip{display:none;margin-top:5px;padding:3px 9px;border-radius:999px;background:rgba(34,211,238,.14);color:var(--accent);font-family:var(--font-mono);font-size:.68rem;font-weight:700;white-space:nowrap}
 .save-hint{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-3);margin-top:4px;opacity:0;transition:opacity .3s}
 .save-hint.show{opacity:1}
 .delete-btn{background:none;border:1px solid rgba(245,85,95,.35);color:var(--red);border-radius:8px;padding:8px 10px;font-family:var(--font-body);font-size:.78rem;font-weight:600;cursor:pointer;max-width:100%}
@@ -315,6 +320,7 @@ body.modal-open{overflow:hidden}
             <th>Teléfono</th>
             <th>Mensaje</th>
             <th>Origen</th>
+            <th>Reunión</th>
             <th>Estado</th>
             <th>Notas</th>
             <th></th>
@@ -360,6 +366,10 @@ body.modal-open{overflow:hidden}
           <option value="Landing web">Landing web (hero)</option>
           <option value="Consultoría">Consultoría</option>
         </select>
+      </div>
+      <div class="field">
+        <label for="al-reunion">Fecha de la reunión</label>
+        <input type="datetime-local" id="al-reunion" class="reunion-input">
       </div>
       <div class="field">
         <label for="al-notas">Notas</label>
@@ -546,6 +556,46 @@ function fmtFechaCorta(iso){
     dia: d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}),
     hora: d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})
   };
+}
+
+// La reunión se guarda en UTC (timestamptz), pero el input datetime-local
+// trabaja en hora local, así que hay que traducir en los dos sentidos.
+function isoADatetimeLocal(iso){
+  if (!iso) return '';
+  var d = new Date(iso);
+  var dd = function(n){ return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + dd(d.getMonth()+1) + '-' + dd(d.getDate()) +
+         'T' + dd(d.getHours()) + ':' + dd(d.getMinutes());
+}
+
+function fmtReunion(iso){
+  var d = new Date(iso);
+  return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}) + ' ' +
+         d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+}
+
+function makeFechaReunionField(lead, alCambiar){
+  var wrap = document.createElement('div');
+  var input = document.createElement('input');
+  input.type = 'datetime-local';
+  input.className = 'reunion-input';
+  input.value = isoADatetimeLocal(lead.fecha_reunion);
+  var hint = document.createElement('div');
+  hint.className = 'save-hint';
+  hint.textContent = 'Guardado ✓';
+  input.addEventListener('change', function(){
+    var valor = input.value ? new Date(input.value).toISOString() : null;
+    lead.fecha_reunion = valor;
+    supabaseClient.from('leads').update({fecha_reunion: valor}).eq('id', lead.id).then(function(res){
+      if (res.error){ window.alert('No se pudo guardar la reunión: ' + res.error.message); return; }
+      hint.classList.add('show');
+      setTimeout(function(){ hint.classList.remove('show'); }, 1500);
+      if (alCambiar) alCambiar(valor);
+    });
+  });
+  wrap.appendChild(input);
+  wrap.appendChild(hint);
+  return wrap;
 }
 
 function makeEstadoSelect(lead, onChangeExtra){
@@ -747,6 +797,20 @@ function buildLeadCard(lead){
   metaDate.textContent = fmtFechaMovil(lead.created_at);
   meta.appendChild(metaDate);
   main.appendChild(meta);
+
+  // Si hay reunión agendada, se ve de un vistazo sin abrir la tarjeta.
+  var reunionChip = document.createElement('span');
+  reunionChip.className = 'reunion-chip';
+  var pintarChip = function(iso){
+    if (iso){
+      reunionChip.textContent = '📅 ' + fmtReunion(iso);
+      reunionChip.style.display = 'inline-block';
+    } else {
+      reunionChip.style.display = 'none';
+    }
+  };
+  pintarChip(lead.fecha_reunion);
+  main.appendChild(reunionChip);
   summary.appendChild(main);
 
   var side = document.createElement('div');
@@ -788,6 +852,7 @@ function buildLeadCard(lead){
   body.appendChild(detailRow('Fecha', fmtFecha(lead.created_at)));
   body.appendChild(detailRow('Mensaje', lead.mensaje || '—'));
   body.appendChild(detailRow('Origen', lead.origen || '—'));
+  body.appendChild(detailRow('Reunión', makeFechaReunionField(lead, pintarChip)));
   body.appendChild(detailRow('Estado', makeEstadoSelect(lead, function(value){
     pill.className = 'estado-pill estado-' + value;
     pill.textContent = value;
@@ -918,6 +983,12 @@ function renderLeads(leads, isFiltered){
       tdOrigen.textContent = lead.origen || '—';
       tr.appendChild(tdOrigen);
 
+      var tdReunion = document.createElement('td');
+      tdReunion.className = 'cell-reunion';
+      tdReunion.setAttribute('data-label', 'Reunión');
+      tdReunion.appendChild(makeFechaReunionField(lead));
+      tr.appendChild(tdReunion);
+
       var tdEstado = document.createElement('td');
       tdEstado.setAttribute('data-label', 'Estado');
       tdEstado.appendChild(makeEstadoSelect(lead, function(value){
@@ -1035,6 +1106,7 @@ addLeadForm.addEventListener('submit', function(e){
   var mensaje = document.getElementById('al-mensaje').value.trim();
   var origen = document.getElementById('al-origen').value;
   var notas = document.getElementById('al-notas').value.trim();
+  var reunion = document.getElementById('al-reunion').value;
 
   if (!nombre){
     addLeadError.textContent = 'Ponle al menos un nombre.';
@@ -1052,7 +1124,8 @@ addLeadForm.addEventListener('submit', function(e){
     telefono: telefono || null,
     mensaje: mensaje || null,
     origen: origen,
-    notas: notas || null
+    notas: notas || null,
+    fecha_reunion: reunion ? new Date(reunion).toISOString() : null
   }).select().then(function(res){
     addLeadSubmitBtn.disabled = false;
     if (res.error || !res.data || !res.data[0]){
