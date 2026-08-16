@@ -182,11 +182,20 @@ body.modal-open{overflow:hidden}
 .lead-summary-main .lead-meta{display:block;font-size:.8rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .lead-summary-main .lead-meta .lead-date{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-3)}
 .lead-summary-side{flex-shrink:0;display:flex;align-items:center}
-.estado-pill{display:inline-block;padding:5px 10px;border-radius:999px;font-family:var(--font-mono);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
-.estado-pill.estado-Nuevo{background:rgba(34,211,238,.15);color:var(--accent)}
-.estado-pill.estado-Contactado{background:rgba(234,179,8,.15);color:#eab308}
-.estado-pill.estado-Agendado,.estado-pill.estado-Cliente{background:rgba(52,211,153,.15);color:var(--green)}
-.estado-pill.estado-Descartado{background:rgba(101,112,137,.15);color:var(--ink-3)}
+/* La etiqueta de estado es un <select> disfrazado de píldora: se toca
+   directamente desde la lista, sin abrir la tarjeta. */
+.estado-pill{-webkit-appearance:none;appearance:none;border:1px solid transparent;cursor:pointer;
+  display:inline-block;min-height:38px;padding:5px 26px 5px 12px;border-radius:999px;
+  font-family:var(--font-mono);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;
+  background-repeat:no-repeat;background-position:right 9px center;background-size:9px;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa7bd' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")}
+.estado-pill:focus{outline:none;border-color:var(--accent)}
+.estado-pill option{background:var(--panel);color:var(--ink);text-transform:none}
+/* background-color, no background: el atajo borraría la flecha del desplegable. */
+.estado-pill.estado-Nuevo{background-color:rgba(34,211,238,.15);color:var(--accent)}
+.estado-pill.estado-Contactado{background-color:rgba(234,179,8,.15);color:#eab308}
+.estado-pill.estado-Agendado,.estado-pill.estado-Cliente{background-color:rgba(52,211,153,.15);color:var(--green)}
+.estado-pill.estado-Descartado{background-color:rgba(101,112,137,.15);color:var(--ink-3)}
 .lead-detail{padding:2px 14px 16px;border-top:1px solid var(--border)}
 .lead-detail-row{padding-top:14px}
 .lead-detail-row .dl-label{display:block;font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:5px}
@@ -746,9 +755,10 @@ function makeFechaReunionField(lead, alCambiar){
   return wrap;
 }
 
-function makeEstadoSelect(lead, onChangeExtra){
+function makeEstadoSelect(lead, onChangeExtra, claseBase){
+  var base = claseBase || 'estado-select';
   var select = document.createElement('select');
-  select.className = 'estado-select estado-' + (lead.estado || 'Nuevo');
+  select.className = base + ' estado-' + (lead.estado || 'Nuevo');
   ESTADOS.forEach(function(estado){
     var opt = document.createElement('option');
     opt.value = estado;
@@ -757,9 +767,11 @@ function makeEstadoSelect(lead, onChangeExtra){
     select.appendChild(opt);
   });
   select.addEventListener('change', function(){
-    select.className = 'estado-select estado-' + select.value;
+    select.className = base + ' estado-' + select.value;
     lead.estado = select.value;
-    supabaseClient.from('leads').update({estado:select.value}).eq('id', lead.id).then(function(){});
+    supabaseClient.from('leads').update({estado:select.value}).eq('id', lead.id).then(function(res){
+      if (res && res.error) window.alert('No se pudo cambiar el estado: ' + res.error.message);
+    });
     updateCountBadge();
     if (onChangeExtra) onChangeExtra(select.value);
   });
@@ -963,9 +975,15 @@ function buildLeadCard(lead){
 
   var side = document.createElement('div');
   side.className = 'lead-summary-side';
-  var pill = document.createElement('span');
-  pill.className = 'estado-pill estado-' + (lead.estado || 'Nuevo');
-  pill.textContent = lead.estado || 'Nuevo';
+  // La etiqueta de estado ES el selector: cambiar el estado es el gesto que
+  // más se repite en el móvil y no debería obligar a abrir la tarjeta.
+  var pill = makeEstadoSelect(lead, function(){
+    pintarDot(dot, lead);
+  }, 'estado-pill');
+  // Sin esto, tocar el selector abriría y cerraría la tarjeta, porque
+  // cualquier clic dentro del summary despliega el <details>.
+  pill.addEventListener('click', function(e){ e.stopPropagation(); });
+  pill.addEventListener('mousedown', function(e){ e.stopPropagation(); });
   side.appendChild(pill);
   summary.appendChild(side);
 
@@ -1001,11 +1019,9 @@ function buildLeadCard(lead){
   body.appendChild(detailRow('Mensaje', lead.mensaje || '—'));
   body.appendChild(detailRow('Origen', lead.origen || '—'));
   body.appendChild(detailRow('Reunión', makeFechaReunionField(lead, pintarChip)));
-  body.appendChild(detailRow('Estado', makeEstadoSelect(lead, function(value){
-    pill.className = 'estado-pill estado-' + value;
-    pill.textContent = value;
-    pintarDot(dot, lead);
-  })));
+  // El estado ya no aparece aquí: lo lleva la etiqueta del resumen. Tener dos
+  // selectores del mismo valor en la misma tarjeta los dejaría descuadrados,
+  // porque cambiar uno no actualiza el otro.
   body.appendChild(detailRow('Notas', makeNotasField(lead)));
 
   var deleteWrap = document.createElement('div');
