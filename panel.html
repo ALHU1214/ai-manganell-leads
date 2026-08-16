@@ -13,15 +13,22 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bricolage+Grotesque:wght@600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Solo los pesos que el CSS usa de verdad: se pedían 10 y se usaban 6. -->
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Bricolage+Grotesque:wght@800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- La descarga arranca ya, pero el <script> vive al final del body para que
+     no bloquee el pintado de la pantalla de login. -->
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#0a0f1a;--bg-soft:#0f1524;--panel:#131b2e;
-  --ink:#eef2f8;--ink-2:#9aa7bd;--ink-3:#657089;
+  /* --ink-3 estaba en #657089: 3.46:1 sobre el panel, por debajo del 4.5:1
+     que pide WCAG AA, y se usa justo en el texto más pequeño (fechas,
+     etiquetas). Subido a 4.6:1 sin cambiar el carácter del gris. */
+  --ink:#eef2f8;--ink-2:#9aa7bd;--ink-3:#7d8aa3;
   --accent:#22d3ee;--accent-2:#0ea5e9;--accent-soft:#12283a;
   --red:#f5555f;--green:#34d399;--border:#1d2740;--border-2:#26314c;
+  --verde-vivo:#22c55e;--ambar:#eab308;--whatsapp:#25d366;--on-accent:#04222c;
   --font-display:'Bricolage Grotesque','Archivo',system-ui,sans-serif;
   --font-body:'Archivo',system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -51,7 +58,7 @@ button,summary,select,a{-webkit-tap-highlight-color:transparent}
 .field-remember{margin-bottom:18px}
 .field-remember label{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--ink-2);cursor:pointer}
 .field-remember input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
-.login-btn{width:100%;background:var(--accent);color:#04222c;font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px;min-height:48px}
+.login-btn{width:100%;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px;min-height:48px}
 .login-btn:hover{opacity:.92}
 .login-error{color:var(--red);font-size:.85rem;text-align:center;margin-top:14px;display:none}
 .passkey-btn{background:none;border:1px solid var(--border-2);color:var(--ink);font-weight:600;font-size:.9rem;padding:13px;border-radius:10px;cursor:pointer;min-height:48px}
@@ -68,7 +75,7 @@ header.panel-header{background:var(--panel);border-bottom:1px solid var(--border
 .header-actions{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .logout-btn{background:none;border:1px solid var(--border-2);border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;color:var(--ink-2);cursor:pointer}
 .logout-btn:hover{color:var(--ink);border-color:var(--ink-2)}
-.notif-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
+.notif-btn{background:var(--accent);color:var(--on-accent);border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
 .notif-btn:hover{opacity:.92}
 .notif-btn[disabled]{background:var(--border-2);color:var(--ink-3);cursor:default}
 .notif-status{font-family:var(--font-mono);font-size:.7rem;line-height:1.35;color:var(--ink-3);flex:0 0 100%;text-align:right}
@@ -79,8 +86,8 @@ main{padding:24px 0 60px;padding-bottom:calc(60px + var(--safe-b))}
 .panel-title h2{font-size:1.4rem}
 .title-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .count-badge{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-2);background:var(--panel);padding:6px 14px;border-radius:999px;white-space:nowrap}
-.count-badge .badge-nuevos{color:#22c55e;font-weight:800}
-.count-badge .badge-pendientes{color:#eab308;font-weight:800}
+.count-badge .badge-nuevos{color:var(--verde-vivo);font-weight:800}
+.count-badge .badge-pendientes{color:var(--ambar);font-weight:800}
 
 .leads-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .search-input{-webkit-appearance:none;appearance:none;flex:1 1 220px;min-height:46px;padding:12px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
@@ -90,7 +97,7 @@ main{padding:24px 0 60px;padding-bottom:calc(60px + var(--safe-b))}
 .estado-filter{-webkit-appearance:none;appearance:none;flex:0 0 auto;min-height:46px;padding:12px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px;cursor:pointer}
 
 .phone-links{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.wa-btn{display:inline-flex;align-items:center;background:rgba(37,211,102,.15);color:#25d366;border-radius:8px;padding:6px 12px;min-height:32px;font-family:var(--font-body);font-size:.76rem;font-weight:700;text-decoration:none;white-space:nowrap}
+.wa-btn{display:inline-flex;align-items:center;background:rgba(37,211,102,.15);color:var(--whatsapp);border-radius:8px;padding:6px 12px;min-height:32px;font-family:var(--font-body);font-size:.76rem;font-weight:700;text-decoration:none;white-space:nowrap}
 .wa-btn:hover{background:rgba(37,211,102,.25)}
 
 .leads-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow-x:auto}
@@ -113,13 +120,13 @@ th:nth-child(11),td:nth-child(11){width:10%}
 .cell-fecha{color:var(--ink-3);font-family:var(--font-mono);font-size:.72rem;line-height:1.4}
 .cell-fecha div{white-space:nowrap}
 .cell-nombre{font-weight:600}
-.lead-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18);margin-right:8px;flex-shrink:0;vertical-align:middle}
-.lead-dot.is-pendiente{background:#eab308;box-shadow:0 0 0 3px rgba(234,179,8,.18)}
+.lead-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--verde-vivo);box-shadow:0 0 0 3px rgba(34,197,94,.18);margin-right:8px;flex-shrink:0;vertical-align:middle}
+.lead-dot.is-pendiente{background:var(--ambar);box-shadow:0 0 0 3px rgba(234,179,8,.18)}
 .cell-notas textarea{width:100%;max-width:100%;min-height:44px;padding:10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;resize:vertical}
 .cell-notas textarea:focus{outline:none;border-color:var(--accent)}
 select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;font-weight:600;cursor:pointer;min-height:44px}
 .estado-Nuevo{color:var(--accent)}
-.estado-Contactado{color:#eab308}
+.estado-Contactado{color:var(--ambar)}
 .estado-Agendado{color:var(--green)}
 .estado-Cliente{color:var(--green)}
 .estado-Descartado{color:var(--ink-3)}
@@ -141,10 +148,35 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 .toast{pointer-events:auto;background:var(--ink);color:var(--bg);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:.88rem;max-width:360px;width:100%}
 .toast-undo{background:none;border:1px solid rgba(10,15,26,.3);color:var(--bg);border-radius:8px;padding:6px 12px;font-family:var(--font-body);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:auto}
 .toast-undo:hover{background:rgba(10,15,26,.1)}
-.empty-state{padding:60px 24px;text-align:center;color:var(--ink-2)}
-.loading{padding:60px 24px;text-align:center;color:var(--ink-2);font-family:var(--font-mono);font-size:.85rem}
+.empty-state{padding:60px 24px;text-align:center;color:var(--ink-2);background:var(--panel);border:1px solid var(--border);border-radius:16px}
 
-.add-lead-btn{background:var(--accent);color:#04222c;border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap}
+/* Esqueleto de carga: se ve la forma de la lista que va a llegar, en vez de
+   una línea de texto que no dice nada de cuánto falta. */
+.skeleton-list{display:none}
+.skeleton-list.show{display:block}
+.skeleton-card{height:64px;margin-bottom:10px;border-radius:14px;background:var(--panel);border:1px solid var(--border);position:relative;overflow:hidden}
+.skeleton-card::after{content:'';position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(154,167,189,.09),transparent);
+  animation:brillo 1.4s ease-in-out infinite}
+.skeleton-card:nth-child(2)::after{animation-delay:.15s}
+.skeleton-card:nth-child(3)::after{animation-delay:.3s}
+@keyframes brillo{100%{transform:translateX(100%)}}
+
+/* Foco visible para teclado. Los :focus de más arriba quitan el outline, que
+   deja a un usuario de teclado sin saber dónde está (WCAG 2.4.7). Estas
+   reglas van después y con la misma especificidad, así que ganan — y solo
+   se activan con teclado, no al tocar con el dedo o el ratón. */
+.field input:focus-visible,.search-input:focus-visible,.estado-filter:focus-visible,
+.cell-notas textarea:focus-visible,.modal-card select:focus-visible,.modal-card textarea:focus-visible,
+.reunion-input:focus-visible,.lead-detail-row textarea:focus-visible,.estado-pill:focus-visible,
+button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){
+  .skeleton-card::after{animation:none}
+}
+
+.add-lead-btn{background:var(--accent);color:var(--on-accent);border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .add-lead-btn:hover{opacity:.92}
 .refresh-btn{background:none;border:1px solid var(--border-2);border-radius:10px;width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;color:var(--ink-2);cursor:pointer}
 .refresh-btn:hover{color:var(--ink);border-color:var(--ink-2)}
@@ -193,7 +225,7 @@ body.modal-open{overflow:hidden}
 .estado-pill option{background:var(--panel);color:var(--ink);text-transform:none}
 /* background-color, no background: el atajo borraría la flecha del desplegable. */
 .estado-pill.estado-Nuevo{background-color:rgba(34,211,238,.15);color:var(--accent)}
-.estado-pill.estado-Contactado{background-color:rgba(234,179,8,.15);color:#eab308}
+.estado-pill.estado-Contactado{background-color:rgba(234,179,8,.15);color:var(--ambar)}
 .estado-pill.estado-Agendado,.estado-pill.estado-Cliente{background-color:rgba(52,211,153,.15);color:var(--green)}
 .estado-pill.estado-Descartado{background-color:rgba(101,112,137,.15);color:var(--ink-3)}
 .lead-detail{padding:2px 14px 16px;border-top:1px solid var(--border)}
@@ -206,7 +238,7 @@ body.modal-open{overflow:hidden}
 /* Acciones rápidas dentro de la tarjeta: llamar, WhatsApp, email */
 .lead-actions{display:flex;gap:8px;padding-top:14px}
 .lead-action{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:10px 8px;border-radius:10px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:.82rem;font-weight:600;text-decoration:none;white-space:nowrap}
-.lead-action.is-wa{border-color:rgba(37,211,102,.35);color:#25d366;background:rgba(37,211,102,.08)}
+.lead-action.is-wa{border-color:rgba(37,211,102,.35);color:var(--whatsapp);background:rgba(37,211,102,.08)}
 .lead-action:active{opacity:.7}
 
 /* Pantallas estrechas o medianas: se oculta la tabla (evita el scroll horizontal), se muestran las tarjetas */
@@ -323,8 +355,16 @@ body.modal-open{overflow:hidden}
         <option value="Descartado">Descartado</option>
       </select>
     </div>
+    <!-- El aviso de carga, el vacío y los errores van FUERA del contenedor de
+         la tabla: ese se oculta por completo en móvil, así que ahí dentro no
+         se veía nada de esto en el teléfono, ni siquiera los errores. -->
+    <div class="skeleton-list" id="loading" aria-hidden="true">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+    <div class="empty-state" id="empty-state" style="display:none">Todavía no ha llegado ningún lead.</div>
     <div class="leads-table-wrap">
-      <div class="loading" id="loading">Cargando leads…</div>
       <table id="leads-table" style="display:none">
         <thead>
           <tr>
@@ -343,7 +383,6 @@ body.modal-open{overflow:hidden}
         </thead>
         <tbody id="leads-body"></tbody>
       </table>
-      <div class="empty-state" id="empty-state" style="display:none">Todavía no ha llegado ningún lead.</div>
     </div>
     <div class="leads-cards" id="leads-cards"></div>
   </main>
@@ -399,8 +438,9 @@ body.modal-open{overflow:hidden}
   </div>
 </div>
 
-<div class="toast-container" id="toast-container"></div>
+<div class="toast-container" id="toast-container" role="status" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // --- Configura tu proyecto de Supabase (ver setup.md) ---
 var SUPABASE_URL = 'https://dbntpdrvnxdhgvdcexrt.supabase.co';
@@ -463,9 +503,9 @@ passkeyRegisterBtn.addEventListener('click', function(){
   passkeyRegisterBtn.disabled = true;
   supabaseClient.auth.registerPasskey().then(function(res){
     passkeyRegisterBtn.disabled = false;
-    if (res.error){ window.alert('No se pudo registrar: ' + res.error.message); return; }
+    if (res.error){ mostrarAviso('No se pudo registrar: ' + res.error.message); return; }
     passkeyRegisterBtn.style.display = 'none';
-    window.alert('Face ID registrado. La próxima vez podrás entrar sin contraseña.');
+    mostrarAviso('Face ID registrado. La próxima vez podrás entrar sin contraseña.');
   });
 });
 
@@ -741,7 +781,7 @@ function makeFechaReunionField(lead, alCambiar){
     var valor = input.value ? new Date(input.value).toISOString() : null;
     lead.fecha_reunion = valor;
     supabaseClient.from('leads').update({fecha_reunion: valor}).eq('id', lead.id).then(function(res){
-      if (res.error){ window.alert('No se pudo guardar la reunión: ' + res.error.message); return; }
+      if (res.error){ mostrarAviso('No se pudo guardar la reunión: ' + res.error.message); return; }
       hint.classList.add('show');
       setTimeout(function(){ hint.classList.remove('show'); }, 1500);
       pintarBoton(valor);
@@ -770,7 +810,7 @@ function makeEstadoSelect(lead, onChangeExtra, claseBase){
     select.className = base + ' estado-' + select.value;
     lead.estado = select.value;
     supabaseClient.from('leads').update({estado:select.value}).eq('id', lead.id).then(function(res){
-      if (res && res.error) window.alert('No se pudo cambiar el estado: ' + res.error.message);
+      if (res && res.error) mostrarAviso('No se pudo cambiar el estado: ' + res.error.message);
     });
     updateCountBadge();
     if (onChangeExtra) onChangeExtra(select.value);
@@ -799,6 +839,17 @@ function makeNotasField(lead){
   wrap.appendChild(textarea);
   wrap.appendChild(hint);
   return wrap;
+}
+
+// Aviso no bloqueante. Sustituye a los window.alert de error, que congelaban
+// la app entera para decir algo que se lee de reojo.
+function mostrarAviso(texto){
+  var container = document.getElementById('toast-container');
+  var toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = texto;
+  container.appendChild(toast);
+  setTimeout(function(){ toast.remove(); }, 5000);
 }
 
 function showUndoToast(message, onUndo, onExpire){
@@ -868,7 +919,7 @@ function makeDeleteButton(lead, node){
       node.style.display = '';
     }, function(){
       supabaseClient.from('leads').delete().eq('id', lead.id).then(function(res){
-        if (res.error){ node.style.display = ''; window.alert('No se pudo eliminar: ' + res.error.message); return; }
+        if (res.error){ node.style.display = ''; mostrarAviso('No se pudo eliminar: ' + res.error.message); return; }
         node.remove();
         var idx = allLeads.findIndex(function(l){ return l.id === lead.id; });
         if (idx !== -1) allLeads.splice(idx, 1);
@@ -1085,29 +1136,58 @@ function applyFilters(){
   renderLeads(filtered, query.length > 0 || estado !== 'Todos');
 }
 
-searchInput.addEventListener('input', applyFilters);
+// Refiltrar en cada tecla repinta la lista entera. Con un respiro de 180 ms
+// el resultado se siente igual de inmediato y se hace una sola vez.
+var busquedaTimer = null;
+searchInput.addEventListener('input', function(){
+  clearTimeout(busquedaTimer);
+  busquedaTimer = setTimeout(applyFilters, 180);
+});
 estadoFilter.addEventListener('change', applyFilters);
+
+// El mismo corte que usa el CSS. Se pintaban SIEMPRE las dos vistas —tabla y
+// tarjetas— aunque solo una esté visible: el doble de nodos y de escuchadores
+// para nada. Ahora se construye únicamente la que se va a ver.
+var mqMovil = window.matchMedia('(max-width: 960px)');
+function enMovil(){ return mqMovil.matches; }
+var alCambiarAncho = function(){ applyFilters(); };
+if (mqMovil.addEventListener) mqMovil.addEventListener('change', alCambiarAncho);
+else mqMovil.addListener(alCambiarAncho); // Safari antiguo
 
 function renderLeads(leads, isFiltered){
   var table = document.getElementById('leads-table');
   var empty = document.getElementById('empty-state');
   var body = document.getElementById('leads-body');
   var cards = document.getElementById('leads-cards');
+  var wrap = document.querySelector('.leads-table-wrap');
 
   if (leads.length === 0){
     table.style.display = 'none';
+    // Sin esto, el contenedor de la tabla se quedaría como una franja vacía
+    // encima del mensaje, ahora que el estado vacío vive fuera de él.
+    wrap.style.display = 'none';
     empty.textContent = isFiltered ? 'Ningún lead coincide con la búsqueda/filtro.' : 'Todavía no ha llegado ningún lead.';
     empty.style.display = 'block';
     cards.innerHTML = '';
+    body.innerHTML = '';
     return;
   }
   empty.style.display = 'none';
 
   body.innerHTML = '';
   cards.innerHTML = '';
-  leads.forEach(function(lead){
-      cards.appendChild(buildLeadCard(lead));
 
+  if (enMovil()){
+    var trozo = document.createDocumentFragment();
+    leads.forEach(function(lead){ trozo.appendChild(buildLeadCard(lead)); });
+    cards.appendChild(trozo);
+    table.style.display = 'none';
+    wrap.style.display = '';   // el CSS ya lo oculta en móvil
+    return;
+  }
+  wrap.style.display = '';
+
+  leads.forEach(function(lead){
       var tr = document.createElement('tr');
 
       var tdFecha = document.createElement('td');
@@ -1196,15 +1276,16 @@ function loadLeads(silencioso){
   var loading = document.getElementById('loading');
   var empty = document.getElementById('empty-state');
   if (!silencioso){
-    loading.style.display = 'block';
+    loading.classList.add('show');
     empty.style.display = 'none';
   }
 
   supabaseClient.from('leads').select('*').order('created_at',{ascending:false}).then(function(res){
-    loading.style.display = 'none';
+    loading.classList.remove('show');
     if(res.error){
-      // En una recarga de fondo no se borra la lista que ya se está viendo.
-      if (silencioso) return;
+      // En una recarga de fondo no se borra la lista que ya se está viendo,
+      // pero el fallo se avisa igual en vez de tragárselo en silencio.
+      if (silencioso){ mostrarAviso('No se pudo actualizar: ' + res.error.message); return; }
       empty.textContent = 'Error cargando leads: ' + res.error.message; empty.style.display = 'block'; return;
     }
     allLeads = res.data || [];
