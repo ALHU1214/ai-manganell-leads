@@ -13,8 +13,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Solo los pesos que el CSS usa de verdad: se pedían 10 y se usaban 6. -->
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Bricolage+Grotesque:wght@800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- Dos familias, cinco pesos. Se pedían tres familias y diez pesos. -->
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <!-- La descarga arranca ya, pero el <script> vive al final del body para que
      no bloquee el pintado de la pantalla de login. -->
 <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin>
@@ -29,9 +29,19 @@
   --accent:#22d3ee;--accent-2:#0ea5e9;--accent-soft:#12283a;
   --red:#f5555f;--green:#34d399;--border:#1d2740;--border-2:#26314c;
   --verde-vivo:#22c55e;--ambar:#eab308;--whatsapp:#25d366;--on-accent:#04222c;
-  --font-display:'Bricolage Grotesque','Archivo',system-ui,sans-serif;
+  /* Una sola familia para toda la interfaz. La display (Bricolage) solo
+     aparecía en dos sitios y traía una familia entera para eso; en una
+     herramienta de trabajo el contraste lo dan el peso y el tamaño, no una
+     segunda tipografía. La mono se reserva para DATOS (fechas, contadores),
+     no para etiquetas: mezclarlas daba textura de máquina de escribir. */
   --font-body:'Archivo',system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  /* Escala fija, razón ~1.2. En producto no se usa tipografía fluida: el
+     usuario mira siempre desde la misma distancia. */
+  --t-xs:.72rem;--t-sm:.82rem;--t-base:.94rem;--t-md:1.05rem;--t-lg:1.25rem;--t-xl:1.5rem;
+  /* Escala de espaciado, para que el ritmo no sea "14px en todas partes". */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;
+  --transicion:160ms cubic-bezier(.22,1,.36,1);
   /* Márgenes seguros del móvil (notch, barra inferior) */
   --safe-t:env(safe-area-inset-top,0px);
   --safe-b:env(safe-area-inset-bottom,0px);
@@ -41,7 +51,7 @@
 }
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg-soft);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh;min-height:100dvh;overscroll-behavior-y:none}
-h1,h2{font-family:var(--font-display);font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+h1,h2{font-weight:700;letter-spacing:-.02em;color:var(--ink);text-wrap:balance}
 a{color:var(--accent)}
 button,summary,select,a{-webkit-tap-highlight-color:transparent}
 .wrap{max-width:1200px;width:100%;margin:0 auto;padding-left:calc(var(--gutter) + var(--safe-l));padding-right:calc(var(--gutter) + var(--safe-r))}
@@ -49,17 +59,19 @@ button,summary,select,a{-webkit-tap-highlight-color:transparent}
 /* LOGIN */
 .login-screen{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:calc(24px + var(--safe-t)) calc(20px + var(--safe-r)) calc(24px + var(--safe-b)) calc(20px + var(--safe-l))}
 .login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--border-2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:38px}
-.login-card h1{font-size:1.5rem;margin-bottom:6px;text-align:center}
+.login-card h1{font-size:var(--t-xl);margin-bottom:var(--sp-1);text-align:center}
 .login-card p.sub{color:var(--ink-2);font-size:.9rem;text-align:center;margin-bottom:26px}
 .field{margin-bottom:16px}
-.field label{display:block;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.06em;font-size:.68rem;color:var(--ink-2);margin-bottom:6px}
+.field label{display:block;font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:var(--t-xs);color:var(--ink-2);margin-bottom:var(--sp-2)}
 .field input{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
 .field input:focus{outline:none;border-color:var(--accent)}
 .field-remember{margin-bottom:18px}
 .field-remember label{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--ink-2);cursor:pointer}
 .field-remember input{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
 .login-btn{width:100%;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:.95rem;padding:14px;border:none;border-radius:10px;cursor:pointer;margin-top:6px;min-height:48px}
-.login-btn:hover{opacity:.92}
+.login-btn{transition:filter var(--transicion),transform var(--transicion)}
+.login-btn:hover{filter:brightness(1.08)}
+.login-btn:active{transform:scale(.99)}
 .login-error{color:var(--red);font-size:.85rem;text-align:center;margin-top:14px;display:none}
 .passkey-btn{background:none;border:1px solid var(--border-2);color:var(--ink);font-weight:600;font-size:.9rem;padding:13px;border-radius:10px;cursor:pointer;min-height:48px}
 .passkey-btn:hover{border-color:var(--accent)}
@@ -69,25 +81,29 @@ button,summary,select,a{-webkit-tap-highlight-color:transparent}
 .panel-screen{display:none}
 header.panel-header{background:var(--panel);border-bottom:1px solid var(--border);padding:12px 0;padding-top:calc(12px + var(--safe-t));position:sticky;top:0;z-index:10}
 .panel-header .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 12px}
-.logo{font-family:var(--font-display);font-weight:800;font-size:1.1rem;display:flex;align-items:center;gap:10px;min-width:0}
+.logo{font-weight:700;letter-spacing:-.01em;font-size:var(--t-md);display:flex;align-items:center;gap:10px;min-width:0}
 .logo-mark{width:32px;height:32px;flex-shrink:0;border-radius:50%;display:block;object-fit:cover}
 .logo-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .header-actions{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px}
 .logout-btn{background:none;border:1px solid var(--border-2);border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;color:var(--ink-2);cursor:pointer}
+.logout-btn{transition:border-color var(--transicion),color var(--transicion)}
 .logout-btn:hover{color:var(--ink);border-color:var(--ink-2)}
-.notif-btn{background:var(--accent);color:var(--on-accent);border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
-.notif-btn:hover{opacity:.92}
-.notif-btn[disabled]{background:var(--border-2);color:var(--ink-3);cursor:default}
-.notif-status{font-family:var(--font-mono);font-size:.7rem;line-height:1.35;color:var(--ink-3);flex:0 0 100%;text-align:right}
+/* Secundario, no principal. Había tres botones cian a la vez (notificaciones,
+   añadir lead, entrar) y ninguno destacaba: el acento deja de ser jerarquía
+   cuando se reparte. En el panel el único principal es "+ Añadir lead". */
+.notif-btn{background:none;color:var(--ink);border:1px solid var(--border-2);border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:var(--t-sm);font-weight:600;cursor:pointer;transition:border-color var(--transicion),color var(--transicion)}
+.notif-btn:hover{border-color:var(--accent);color:var(--accent)}
+.notif-btn[disabled]{border-color:var(--border);color:var(--ink-3);cursor:default}
+.notif-status{font-size:var(--t-xs);line-height:1.35;color:var(--ink-3);flex:0 0 100%;text-align:right}
 .notif-status:empty{display:none}
 
 main{padding:24px 0 60px;padding-bottom:calc(60px + var(--safe-b))}
 .panel-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px;margin-bottom:16px}
-.panel-title h2{font-size:1.4rem}
+.panel-title h2{font-size:var(--t-xl)}
 .title-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .count-badge{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-2);background:var(--panel);padding:6px 14px;border-radius:999px;white-space:nowrap}
-.count-badge .badge-nuevos{color:var(--verde-vivo);font-weight:800}
-.count-badge .badge-pendientes{color:var(--ambar);font-weight:800}
+.count-badge .badge-nuevos{color:var(--verde-vivo);font-weight:700}
+.count-badge .badge-pendientes{color:var(--ambar);font-weight:700}
 
 .leads-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
 .search-input{-webkit-appearance:none;appearance:none;flex:1 1 220px;min-height:46px;padding:12px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
@@ -102,7 +118,7 @@ main{padding:24px 0 60px;padding-bottom:calc(60px + var(--safe-b))}
 
 .leads-table-wrap{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow-x:auto}
 table{width:100%;table-layout:fixed;border-collapse:collapse}
-th{text-align:left;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);padding:14px 10px;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+th{text-align:left;font-weight:600;font-size:var(--t-xs);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);padding:14px 10px;border-bottom:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 td{padding:14px 10px;border-bottom:1px solid var(--border);font-size:.92rem;vertical-align:top;overflow-wrap:break-word}
 tr:last-child td{border-bottom:none}
 tr:hover{background:var(--bg-soft)}
@@ -136,8 +152,8 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 .cal-btn{display:none;width:100%;margin-top:8px;min-height:46px;padding:11px 12px;border-radius:10px;border:1px solid var(--accent);background:rgba(34,211,238,.1);color:var(--accent);font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer}
 .cal-btn:hover{background:rgba(34,211,238,.18)}
 .cal-btn:active{opacity:.7}
-.reunion-chip{display:none;margin-top:5px;padding:3px 9px;border-radius:999px;background:rgba(34,211,238,.14);color:var(--accent);font-family:var(--font-mono);font-size:.68rem;font-weight:700;white-space:nowrap}
-.save-hint{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-3);margin-top:4px;opacity:0;transition:opacity .3s}
+.reunion-chip{display:none;margin-top:var(--sp-1);padding:3px 9px;border-radius:999px;background:rgba(34,211,238,.14);color:var(--accent);font-family:var(--font-mono);font-size:var(--t-xs);font-weight:700;white-space:nowrap}
+.save-hint{font-size:var(--t-xs);color:var(--ink-3);margin-top:4px;opacity:0;transition:opacity .3s}
 .save-hint.show{opacity:1}
 .delete-btn{background:none;border:1px solid rgba(245,85,95,.35);color:var(--red);border-radius:8px;padding:8px 10px;font-family:var(--font-body);font-size:.78rem;font-weight:600;cursor:pointer;max-width:100%}
 .delete-btn:hover{background:rgba(245,85,95,.1)}
@@ -148,7 +164,12 @@ select.estado-select{width:100%;max-width:100%;padding:10px;border-radius:8px;bo
 .toast{pointer-events:auto;background:var(--ink);color:var(--bg);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:.88rem;max-width:360px;width:100%}
 .toast-undo{background:none;border:1px solid rgba(10,15,26,.3);color:var(--bg);border-radius:8px;padding:6px 12px;font-family:var(--font-body);font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;margin-left:auto}
 .toast-undo:hover{background:rgba(10,15,26,.1)}
-.empty-state{padding:60px 24px;text-align:center;color:var(--ink-2);background:var(--panel);border:1px solid var(--border);border-radius:16px}
+/* Un estado vacío que explica de dónde vienen los leads, en vez de constatar
+   que no hay ninguno. Es la primera pantalla que se ve y la que más puede
+   enseñar. */
+.empty-state{padding:var(--sp-6) var(--sp-5);text-align:center;background:var(--panel);border:1px solid var(--border);border-radius:16px}
+.empty-title{font-size:var(--t-md);font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.empty-sub{margin:var(--sp-2) auto 0;max-width:44ch;font-size:var(--t-sm);line-height:1.6;color:var(--ink-2);text-wrap:pretty}
 
 /* Esqueleto de carga: se ve la forma de la lista que va a llegar, en vez de
    una línea de texto que no dice nada de cuánto falta. */
@@ -176,9 +197,11 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible,
   .skeleton-card::after{animation:none}
 }
 
-.add-lead-btn{background:var(--accent);color:var(--on-accent);border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap}
-.add-lead-btn:hover{opacity:.92}
+.add-lead-btn{background:var(--accent);color:var(--on-accent);border:none;border-radius:10px;padding:10px 16px;min-height:40px;font-family:var(--font-body);font-size:var(--t-sm);font-weight:700;cursor:pointer;white-space:nowrap;transition:filter var(--transicion),transform var(--transicion)}
+.add-lead-btn:hover{filter:brightness(1.08)}
+.add-lead-btn:active{transform:scale(.97)}
 .refresh-btn{background:none;border:1px solid var(--border-2);border-radius:10px;width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;color:var(--ink-2);cursor:pointer}
+.refresh-btn{transition:border-color var(--transicion),color var(--transicion)}
 .refresh-btn:hover{color:var(--ink);border-color:var(--ink-2)}
 .refresh-btn.spin{animation:girar .7s linear infinite;color:var(--accent);border-color:var(--accent)}
 @keyframes girar{to{transform:rotate(360deg)}}
@@ -187,7 +210,7 @@ button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible,
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,8,14,.65);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);z-index:200;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.show{display:flex}
 .modal-card{width:100%;max-width:440px;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--panel);border:1px solid var(--border-2);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.4);padding:26px}
-.modal-card h3{font-size:1.15rem;margin-bottom:18px}
+.modal-card h3{font-size:var(--t-lg);font-weight:700;letter-spacing:-.01em;margin-bottom:var(--sp-4)}
 .modal-grab{display:none;width:40px;height:4px;border-radius:999px;background:var(--border-2);margin:0 auto 14px}
 body.modal-open{overflow:hidden}
 .modal-card select{width:100%;padding:14px;border-radius:10px;background:var(--bg);border:1px solid var(--border-2);color:var(--ink);font-family:var(--font-body);font-size:16px}
@@ -201,10 +224,12 @@ body.modal-open{overflow:hidden}
 
 /* Tarjetas de leads para móvil: lista compacta, cada una se expande al tocarla */
 .leads-cards{display:none}
-.lead-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.lead-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;margin-bottom:var(--sp-2);overflow:hidden;transition:border-color var(--transicion)}
 .lead-card[open]{border-color:var(--border-2)}
 .lead-card summary{list-style:none;cursor:pointer;padding:14px 14px;min-height:64px;display:flex;align-items:center;gap:10px}
 .lead-card summary::-webkit-details-marker{display:none}
+.lead-card summary{transition:background var(--transicion)}
+.lead-card summary:hover{background:rgba(154,167,189,.04)}
 .lead-card summary:active{background:var(--bg-soft)}
 .lead-card summary::after{content:'';width:9px;height:9px;border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);transform:rotate(45deg);transition:transform .2s;flex-shrink:0;margin:0 2px 0 2px}
 .lead-card[open] summary::after{transform:rotate(-135deg)}
@@ -218,7 +243,7 @@ body.modal-open{overflow:hidden}
    directamente desde la lista, sin abrir la tarjeta. */
 .estado-pill{-webkit-appearance:none;appearance:none;border:1px solid transparent;cursor:pointer;
   display:inline-block;min-height:38px;padding:5px 26px 5px 12px;border-radius:999px;
-  font-family:var(--font-mono);font-size:.66rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;
+  font-weight:700;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;
   background-repeat:no-repeat;background-position:right 9px center;background-size:9px;
   background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239aa7bd' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E")}
 .estado-pill:focus{outline:none;border-color:var(--accent)}
@@ -228,9 +253,9 @@ body.modal-open{overflow:hidden}
 .estado-pill.estado-Contactado{background-color:rgba(234,179,8,.15);color:var(--ambar)}
 .estado-pill.estado-Agendado,.estado-pill.estado-Cliente{background-color:rgba(52,211,153,.15);color:var(--green)}
 .estado-pill.estado-Descartado{background-color:rgba(101,112,137,.15);color:var(--ink-3)}
-.lead-detail{padding:2px 14px 16px;border-top:1px solid var(--border)}
-.lead-detail-row{padding-top:14px}
-.lead-detail-row .dl-label{display:block;font-family:var(--font-mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:5px}
+.lead-detail{padding:var(--sp-1) var(--sp-4) var(--sp-5);border-top:1px solid var(--border)}
+.lead-detail-row{padding-top:var(--sp-4)}
+.lead-detail-row .dl-label{display:block;font-weight:600;font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.04em;color:var(--ink-2);margin-bottom:var(--sp-1)}
 .lead-detail-row .dl-value{font-size:.94rem;line-height:1.5;word-break:break-word}
 .lead-detail-row select.estado-select{width:100%}
 .lead-detail-row textarea{width:100%;min-height:88px;padding:12px;border-radius:10px;border:1px solid var(--border-2);background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;resize:vertical}
@@ -279,7 +304,9 @@ body.modal-open{overflow:hidden}
 @keyframes sheet-up{from{transform:translateY(14px);opacity:.6}to{transform:translateY(0);opacity:1}}
 @media (prefers-reduced-motion: reduce){
   .modal-card{animation:none}
-  .lead-card summary::after{transition:none}
+  /* Cubre también las transiciones nuevas de botones y tarjetas. */
+  *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important}
+  .add-lead-btn:active,.login-btn:active{transform:none}
 }
 
 /* Móviles pequeños: se aprieta todo un poco más y el título ocupa su propia línea */
@@ -363,7 +390,10 @@ body.modal-open{overflow:hidden}
       <div class="skeleton-card"></div>
       <div class="skeleton-card"></div>
     </div>
-    <div class="empty-state" id="empty-state" style="display:none">Todavía no ha llegado ningún lead.</div>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <p class="empty-title">Todavía no ha llegado ningún lead</p>
+      <p class="empty-sub">Entran solos desde los formularios de aimanganell.com, y te avisa una notificación. También puedes añadir uno a mano.</p>
+    </div>
     <div class="leads-table-wrap">
       <table id="leads-table" style="display:none">
         <thead>
@@ -1154,6 +1184,19 @@ var alCambiarAncho = function(){ applyFilters(); };
 if (mqMovil.addEventListener) mqMovil.addEventListener('change', alCambiarAncho);
 else mqMovil.addListener(alCambiarAncho); // Safari antiguo
 
+// El estado vacio tiene dos parrafos fijos en el HTML; se rellenan en vez de
+// reemplazar el nodo entero, que era lo que hacia textContent.
+function pintarVacio(titulo, subtitulo){
+  var empty = document.getElementById('empty-state');
+  empty.querySelector('.empty-title').textContent = titulo;
+  var sub = empty.querySelector('.empty-sub');
+  if (subtitulo === null){
+    sub.textContent = 'Entran solos desde los formularios de aimanganell.com, y te avisa una notificación. También puedes añadir uno a mano.';
+  } else {
+    sub.textContent = subtitulo;
+  }
+}
+
 function renderLeads(leads, isFiltered){
   var table = document.getElementById('leads-table');
   var empty = document.getElementById('empty-state');
@@ -1166,7 +1209,13 @@ function renderLeads(leads, isFiltered){
     // Sin esto, el contenedor de la tabla se quedaría como una franja vacía
     // encima del mensaje, ahora que el estado vacío vive fuera de él.
     wrap.style.display = 'none';
-    empty.textContent = isFiltered ? 'Ningún lead coincide con la búsqueda/filtro.' : 'Todavía no ha llegado ningún lead.';
+    // Se cambia solo el titulo: el subtitulo explica de donde vienen los
+    // leads, y eso solo tiene sentido cuando la lista esta vacia de verdad,
+    // no cuando es un filtro el que no encuentra nada.
+    pintarVacio(
+      isFiltered ? 'Ningún lead coincide con la búsqueda' : 'Todavía no ha llegado ningún lead',
+      isFiltered ? 'Prueba con otro texto, o pon el filtro de estado en "Todos".' : null
+    );
     empty.style.display = 'block';
     cards.innerHTML = '';
     body.innerHTML = '';
@@ -1286,7 +1335,7 @@ function loadLeads(silencioso){
       // En una recarga de fondo no se borra la lista que ya se está viendo,
       // pero el fallo se avisa igual en vez de tragárselo en silencio.
       if (silencioso){ mostrarAviso('No se pudo actualizar: ' + res.error.message); return; }
-      empty.textContent = 'Error cargando leads: ' + res.error.message; empty.style.display = 'block'; return;
+      pintarVacio('No se pudieron cargar los leads', res.error.message); empty.style.display = 'block'; return;
     }
     allLeads = res.data || [];
     updateCountBadge();

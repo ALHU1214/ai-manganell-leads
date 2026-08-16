@@ -15,7 +15,7 @@ function avisarAlPanel(){
 // Antes no se cacheaba nada: cada arranque en frío iba a la red a por el HTML,
 // la librería de Supabase y las fuentes, y sin cobertura la app no abría.
 // Al subir la versión de CACHE se descartan solas las cachés viejas.
-var CACHE = 'am-leads-v1';
+var CACHE = 'am-leads-v2';
 var ESQUELETO = [
   'panel.html',
   'manifest.json',
